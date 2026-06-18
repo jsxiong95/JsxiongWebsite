@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Portfolio OS</title>
 
-  <!-- Retro pixel fonts: Press Start 2P (display) + VT323 (readable body) -->
+  <!-- pixel fonts: Press Start 2P for display, VT323 for body -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -16,13 +16,13 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <!-- The whole machine. Everything below is generated from js/config.js -->
+  <!-- desktop + windows are built from js/config.js -->
   <main id="desktop" class="desktop" aria-label="Desktop">
     <div id="icon-layer" class="icon-layer"><!-- desktop icons injected --></div>
     <div id="window-layer" class="window-layer"><!-- windows injected --></div>
   </main>
 
-  <!-- Start menu (hidden until the Start button is pressed) -->
+  <!-- Start menu -->
   <nav id="start-menu" class="start-menu" aria-label="Start menu"></nav>
 
   <!-- Taskbar -->
@@ -37,7 +37,7 @@
       <span class="start-button__face" aria-hidden="true">
         <span class="start-button__screen"></span>
       </span>
-      <span class="start-button__text">start</span>
+      <span class="start-button__text">Start</span>
     </button>
 
     <div id="process-bar" class="process-bar"><!-- running app tabs injected --></div>
@@ -48,7 +48,7 @@
     </div>
   </footer>
 
-  <!-- Load order matters: data -> view -> engine -->
+  <!-- load order: data, then view, then engine -->
   <script src="js/config.js"></script>
   <script src="js/renderers.js"></script>
   <script src="js/os.js"></script>

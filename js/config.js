@@ -1,45 +1,12 @@
-/* ============================================================================
- *  config.js  —  THE CENTRAL REGISTRY  (data only, no logic)
- * ============================================================================
- *  This is the ONLY file you need to touch to add, remove, or edit apps.
- *  Add a new object to the APPS array and the desktop icon, window, start-menu
- *  entry, and taskbar tab are all generated automatically.
- *
- *  Each app object:
- *    id        unique string, no spaces            (e.g. "music")
- *    title     label shown under the icon + tab    (e.g. "music")
- *    icon      path to a pixel-art PNG for the icon (see assets/icons/)
- *    width     opening window width  in px
- *    height    opening window height in px
- *    type      which renderer to use:
- *                "carousel" | "gallery" | "document"   (content layouts)
- *                "game" | "iframe"                      (embed a playable app)
- *                "link"                                 (open a URL, no window)
- *    data      content for that renderer (shape depends on `type`, see below)
- *
- *  OPTIONAL per-app fields:
- *    multi     true  -> every launch opens a NEW window/process (e.g. games)
- *              false -> single window; clicking the icon refocuses it (default)
- *    flush     true  -> body has no padding (set automatically for game/iframe)
- *
- *  MEDIA PLACEHOLDERS
- *    Leave any image / video path as an empty string ("") to show a labeled
- *    placeholder box. Drop in your real file path when ready and it appears.
- *    Image paths get an automatic fallback to a placeholder if the file is
- *    missing, so a wrong path never shows a broken-image icon.
- * ========================================================================== */
+// config.js
+// App list (APPS) and system settings (SYSTEM). Data only, no logic.
 
 const APPS = [
 
-  /* ----------------------------------------------------------------------
-   *  GAMES  —  carousel of projects
-   *  data.items[] = { title, description, contribution, artwork[], video }
-   *    artwork : array of image paths (drop in assets/games/)
-   *    video   : single video path  (drop in assets/games/), "" = placeholder
-   * -------------------------------------------------------------------- */
+  // games carousel
   {
     id: "games",
-    title: "games",
+    title: "Games",
     icon: "assets/icons/games.png",
     width: 760,
     height: 560,
@@ -47,33 +14,52 @@ const APPS = [
     data: {
       items: [
         {
-          title: "PROJECT ONE",
+          title: "Ghost for Hire",
           description:
-            "A short pitch for the game goes here — genre, hook, platform, " +
-            "and the feeling you wanted players to walk away with.",
+            "Ghost for Hire is an eight-person team project where you play " +
+            "as a ghost hired to scare humans out of an area.",
           contribution:
-            "What you specifically built: systems, levels, tools, pipelines. " +
-            "Be concrete — “designed the combat loop and authored 12 levels.”",
-          artwork: ["", ""],          // e.g. ["assets/games/p1-key.png", "assets/games/p1-screen.png"]
-          video: ""                   // e.g. "assets/games/p1-gameplay.mp4"
-        },
-        {
-          title: "PROJECT TWO",
-          description:
-            "Second project blurb. Keep it to a couple of sentences so the " +
-            "card stays scannable.",
-          contribution:
-            "Your role on this one. Mention team size and what you owned.",
+            "I worked mostly on gameplay: implementing the designed abilities, " +
+            "handling player controls, and catching the edge cases those " +
+            "abilities introduced. I also did the majority of the UI " +
+            "programming, using a mix of C++ and Blueprints. For example, I " +
+            "wrote several custom functions in the C++ widget class to handle " +
+            "complex logic, then exposed them so my teammates could call them " +
+            "for UI needs like ability checks, icon changes, and value tweaks.",
           artwork: ["", ""],
           video: ""
         },
         {
-          title: "PROJECT THREE",
+          title: "Spellgun Sprint",
           description:
-            "Third project blurb. Swap in as many or as few projects as you " +
-            "like — the carousel sizes itself to the list.",
+            "Spellgun Sprint is a high-fantasy speedrun shooter that mixes " +
+            "guns and magic. You're a wizard-artificer who has just been " +
+            "kicked out of your own tower by a meddling druid set on " +
+            "destroying your life's work. Use your Spellgun technology to " +
+            "fight back and reclaim your home. Time is of the essence!",
           contribution:
-            "Your role here. Link the impact: shipped, awards, downloads.",
+            "I worked on character models, hero assets, and lighting.",
+          artwork: ["", ""],
+          video: ""
+        },
+        {
+          title: "The Collector",
+          description:
+            "The Collector is a platformer where you play a thief making your " +
+            "escape from the city, helping yourself to a few valuables on the " +
+            "way out.",
+          contribution:
+            "This was a solo project and my first ever in Unreal Engine. I " +
+            "learned to create complex actors, work with node-based shaders, " +
+            "and get to grips with Blueprints. I built a rudimentary AI that " +
+            "attacks the player when they are in sight and lit. To do it, I " +
+            "made a collision box covering the lit area and tied the AI's " +
+            "behaviour and movement to that box, which sold the illusion that " +
+            "the enemy could only see the player in the light. The AI had " +
+            "three states: patrol, chase, and attack. It patrolled while the " +
+            "player was unseen, closed the distance when the player was " +
+            "spotted but far off, and attacked once in range, dealing damage " +
+            "until the player broke line of sight.",
           artwork: [""],
           video: ""
         }
@@ -81,17 +67,10 @@ const APPS = [
     }
   },
 
-  /* ----------------------------------------------------------------------
-   *  ART  —  gallery grid
-   *  data.artstationUrl : your default profile link
-   *  data.pieces[] = { title, image, description, tools[], link }
-   *    image : path (drop in assets/art/), "" = placeholder
-   *    tools : array of strings, e.g. ["Photoshop", "Aseprite"]
-   *    link  : optional per-piece link; falls back to artstationUrl
-   * -------------------------------------------------------------------- */
+  // art gallery
   {
     id: "art",
-    title: "art",
+    title: "Art",
     icon: "assets/icons/art.png",
     width: 820,
     height: 600,
@@ -101,10 +80,10 @@ const APPS = [
       pieces: [
         {
           title: "Piece One",
-          image: "",                  // e.g. "assets/art/piece1.png"
-          description: "A line about the piece — brief, medium, or the idea.",
+          image: "",
+          description: "A line about the piece, the brief, medium, or idea.",
           tools: ["Photoshop", "Aseprite"],
-          link: ""                    // optional direct link to this piece
+          link: ""
         },
         {
           title: "Piece Two",
@@ -131,31 +110,34 @@ const APPS = [
     }
   },
 
-  /* ----------------------------------------------------------------------
-   *  ABOUT ME  —  document
-   *  data.name     : heading
-   *  data.role     : subheading / tagline
-   *  data.bio[]    : array of paragraphs
-   *  data.resumeUrl: path to your resume file (drop in assets/), "" disables
-   *  data.links[]  : optional { label, url } contact rows
-   * -------------------------------------------------------------------- */
+  // about me document
   {
     id: "about",
-    title: "about me",
+    title: "About Me",
     icon: "assets/icons/about.png",
     width: 560,
     height: 600,
     type: "document",
     data: {
       name: "YOUR NAME",
-      role: "Game Developer · Pixel Artist",
+      role: "Game Developer, 3D Artist, Technical Artist, Programmer",
       bio: [
-        "Write a couple of friendly sentences about who you are and what " +
-          "you make. Keep the first line strong — it’s the hook.",
-        "A second paragraph for background: where you’ve worked, what you " +
-          "care about, and the kind of projects you want next."
+        "I'm a game developer with a Master of Science, working across " +
+          "gameplay programming, 3D art, and technical art. I'm happy taking " +
+          "a feature from design to a shipped, edge-case-proof build, and I " +
+          "like sitting in the overlap between engineering and art where the " +
+          "two have to meet.",
+        "In Unreal Engine I've built complex actors, node-based shaders, and " +
+          "stateful enemy AI, and I work fluently across C++ and Blueprints, " +
+          "often writing custom C++ functions that give teammates clean hooks " +
+          "to build on. On the art side I've handled character models, hero " +
+          "assets, and lighting; on the programming side I've owned gameplay " +
+          "systems, player controls, and UI. Recent projects span an " +
+          "eight-person team game (Ghost for Hire), a fast-paced fantasy " +
+          "shooter (Spellgun Sprint), and a solo Unreal platformer (The " +
+          "Collector)."
       ],
-      resumeUrl: "",                  // e.g. "assets/resume.pdf"
+      resumeUrl: "",
       links: [
         { label: "Email", url: "mailto:you@example.com" },
         { label: "GitHub", url: "https://github.com/your-handle" }
@@ -163,54 +145,37 @@ const APPS = [
     }
   },
 
-  /* ----------------------------------------------------------------------
-   *  PLAYABLE GAME  —  template (duplicate this block per game)
-   *  Put your exported game in its own folder, e.g.  games/mygame/index.html
-   *  (a Construct/Phaser/Godot/PICO-8/Kaboom/plain-canvas export), then point
-   *  data.src at that index.html. Each click launches its own window/process.
-   * -------------------------------------------------------------------- */
   {
     id: "mygame",
-    title: "my game",
-    icon: "assets/icons/mygame.png",   // a cartridge PNG for this game
+    title: "My Game",
+    icon: "assets/icons/mygame.png",
     width: 820,
     height: 640,
     type: "game",
-    multi: true,                        // allow multiple play sessions at once
+    multi: true,
     data: {
-      src: ""                           // e.g. "games/mygame/index.html"
+      src: ""
     }
   }
 
-  /* ----------------------------------------------------------------------
-   *  EXTRA ICON IDEAS (uncomment / adapt):
-   *
-   *  // A desktop shortcut that opens an external link in a new tab:
-   *  ,{
-   *    id: "itch", title: "itch.io", icon: "assets/icons/itch.png",
-   *    type: "link", data: { url: "https://your-name.itch.io" }
-   *  }
-   * -------------------------------------------------------------------- */
-
 ];
 
-/* ============================================================================
- *  SYSTEM  —  start-menu identity, pinned links, themes, run-dialog jokes
- *  Data only; the engine (os.js) renders all of this. Edit freely.
- * ========================================================================== */
+// SYSTEM
+// start-menu identity, pinned links, themes, run-dialog replies.
+// data only, os.js renders all of it.
 const SYSTEM = {
 
-  /* Banner at the top of the start menu */
+  // start-menu banner
   user: {
     name: "YOUR NAME",
-    status: "online \u00B7 open to work",
-    avatar: "assets/icons/avatar.png"   // square pixel portrait; "" -> initial letter
+    status: "Online \u00B7 Open to work",
+    avatar: "assets/icons/avatar.png"
   },
 
-  /* Text on the boot / power-on splash */
+  // boot splash text
   boot: { title: "PORTFOLIO OS", subtitle: "v1.0  \u2014  press start" },
 
-  /* Pinned links (open in a new tab). Swap in your real URLs. */
+  // pinned links (open in a new tab)
   links: [
     { label: "GitHub",     url: "https://github.com/your-handle" },
     { label: "ArtStation", url: "https://www.artstation.com/your-profile-here" },
@@ -218,8 +183,7 @@ const SYSTEM = {
     { label: "Email",      url: "mailto:you@example.com" }
   ],
 
-  /* Desktop colour themes. Each key in `vars` maps to a CSS variable; the first
-     theme is the default. Add your own — only the listed vars are swapped. */
+  // colour themes
   themes: [
     { id: "teal",    name: "Teal (default)", vars: { "--desktop": "#3fb6c6", "--purple": "#5b3fa0", "--purple-hi": "#8a63d6", "--accent": "#ff4d8d", "--accent-2": "#ffd23f", "--blue": "#3c7bd4" } },
     { id: "sunset",  name: "Sunset",         vars: { "--desktop": "#e98a5b", "--purple": "#7d3a86", "--purple-hi": "#b95ca6", "--accent": "#ff5d73", "--accent-2": "#ffd23f", "--blue": "#e0556e" } },
@@ -228,9 +192,7 @@ const SYSTEM = {
     { id: "gameboy", name: "Game Boy",       vars: { "--desktop": "#8bac0f", "--purple": "#306230", "--purple-hi": "#9bbc0f", "--accent": "#306230", "--accent-2": "#0f380f", "--blue": "#306230" } }
   ],
 
-  /* Easter-egg replies for the Run… dialog. Keys are lowercased commands.
-     Anything not here that matches an app id/title launches that app instead.
-     Built-ins already handled: <app name>, "theme <name>", shutdown, restart, clear. */
+  // run dialog replies
   run: {
     help:   "commands: <app name>, theme <name>, shutdown, restart, clear, help",
     hello:  "Hello, user. :)",
@@ -243,6 +205,6 @@ const SYSTEM = {
 
 };
 
-/* Make available to the renderers + engine (both load after this file). */
+// renderers + engine load after this file
 window.APPS = APPS;
 window.SYSTEM = SYSTEM;

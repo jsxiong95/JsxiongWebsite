@@ -4,15 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Portfolio OS</title>
+
+  <!-- pixel fonts: Press Start 2P for display, VT323 for body -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+    rel="stylesheet"
+  />
+
   <style>
-/* ============================================================================
- *  styles.css  —  THE LOOK
- *  Palette is pulled from the reference: teal desktop, cream window faces,
- *  cartridge purple, star magenta + yellow. Chunky Win9x-style bevels.
- * ========================================================================== */
+/* styles.css
+   teal desktop, cream window faces, cartridge purple, magenta + yellow
+   accents. chunky win9x-style bevels. */
 
 :root {
   /* surfaces */
@@ -56,7 +60,7 @@ body.is-dragging { cursor: grabbing; }
 img { display: block; }
 button { font-family: inherit; }
 
-/* subtle CRT scanline signature — restrained, decorative only */
+/* crt scanlines, decorative */
 body::after {
   content: "";
   position: fixed;
@@ -113,9 +117,7 @@ body::after {
 }
 .os-btn:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
 
-/* ============================================================================
- *  DESKTOP + ICONS
- * ========================================================================== */
+/* desktop + icons */
 .desktop {
   position: absolute;
   inset: 0 0 var(--bar-h) 0;
@@ -153,7 +155,7 @@ body::after {
   image-rendering: pixelated;
   filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.35));
 }
-/* fallback shown when the icon PNG is missing */
+/* shown when the icon png is missing */
 .app-icon-fallback {
   width: 72px;
   height: 72px;
@@ -179,11 +181,9 @@ body::after {
     2px -2px var(--ink), -2px 2px var(--ink);
 }
 
-/* ============================================================================
- *  WINDOWS
- * ========================================================================== */
-/* The layer spans the whole desktop, so let clicks pass through to the icons
- * beneath it; only the windows themselves should capture pointer events. */
+/* windows */
+/* layer covers the desktop, so let clicks pass through to the icons under
+ * it; only the windows capture pointer events */
 .window-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 
 .window {
@@ -195,7 +195,7 @@ body::after {
   min-height: 180px;
   max-width: calc(100vw - 16px);
   max-height: calc(100vh - var(--bar-h) - 16px);
-  max-height: calc(100dvh - var(--bar-h) - 16px); /* dvh: survives mobile URL bar */
+  max-height: calc(100dvh - var(--bar-h) - 16px); /* dvh, not vh, for the mobile url bar */
   background: var(--panel);
   border: 3px solid var(--bevel-lo2);
   box-shadow:
@@ -260,18 +260,20 @@ body::after {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
   padding: 18px;
   background: var(--panel);
   border-top: 2px solid var(--bevel-lo2);
 }
 
-/* game / iframe windows render edge-to-edge with no chrome padding */
+/* game/iframe windows render edge-to-edge */
 .window__body--flush { padding: 0; overflow: hidden; background: #000; }
 .game-frame { width: 100%; height: 100%; background: #000; }
 .game-frame__iframe { width: 100%; height: 100%; border: 0; display: block; }
 .placeholder--game { width: 100%; height: 100%; min-height: 0; border-width: 0; }
-/* While ANY window is being dragged, stop every game iframe from capturing the
- * mouse — otherwise the drag "sticks" the moment the cursor crosses a game. */
+/* while a window is being dragged, stop game iframes capturing the mouse,
+ * otherwise the drag sticks when the cursor crosses a game */
 .window--dragging .game-frame,
 body.is-dragging .game-frame { pointer-events: none; }
 
@@ -327,11 +329,9 @@ body.is-dragging .game-frame { pointer-events: none; }
 .empty-state__title { font-family: var(--font-display); font-size: 12px; }
 .empty-state__hint { font-size: 18px; }
 
-/* ============================================================================
- *  GAMES — carousel
- * ========================================================================== */
+/* games carousel */
 .carousel { display: flex; flex-direction: column; gap: 14px; height: 100%; }
-.carousel__stage { flex: 1; min-height: 0; }
+.carousel__stage { flex: 1; min-height: 0; overflow-y: auto; }
 .game-card { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; }
 .game-card__media { display: flex; flex-direction: column; gap: 10px; }
 .game-card__video { width: 100%; }
@@ -354,13 +354,12 @@ body.is-dragging .game-frame { pointer-events: none; }
   align-items: center;
   justify-content: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 .carousel__arrow { padding: 8px 16px; }
 .carousel__counter { font-family: var(--font-display); font-size: 11px; min-width: 70px; text-align: center; }
 
-/* ============================================================================
- *  ART — gallery
- * ========================================================================== */
+/* art gallery */
 .gallery { display: flex; flex-direction: column; gap: 16px; }
 .gallery__header {
   display: flex;
@@ -397,9 +396,7 @@ body.is-dragging .game-frame { pointer-events: none; }
 }
 .art-card__link:hover { color: var(--accent); text-decoration: underline; }
 
-/* ============================================================================
- *  ABOUT ME — document
- * ========================================================================== */
+/* about me document */
 .doc { display: flex; flex-direction: column; gap: 10px; max-width: 60ch; }
 .doc__name { font-family: var(--font-display); font-size: 18px; color: var(--purple); margin: 0; }
 .doc__role { font-size: 20px; color: var(--ink-soft); margin: 0; }
@@ -411,9 +408,7 @@ body.is-dragging .game-frame { pointer-events: none; }
 .doc__resume { align-self: flex-start; margin-top: 14px; }
 .doc__resume--off { cursor: default; opacity: 0.55; }
 
-/* ============================================================================
- *  TASKBAR
- * ========================================================================== */
+/* taskbar */
 .taskbar {
   position: fixed;
   left: 0;
@@ -470,16 +465,16 @@ body.is-dragging .game-frame { pointer-events: none; }
 }
 .start-button__text { line-height: 1; }
 
-/* expressive face: JS sets data-face on the button; default content is ":)" */
+/* face: js sets data-face on the button, default is :) */
 .start-button[data-face="wink"]  .start-button__screen::before { content: ";)"; }
 .start-button[data-face="grin"]  .start-button__screen::before { content: ":D"; }
 .start-button[data-face="oh"]    .start-button__screen::before { content: ":O"; }
 .start-button[data-face="blink"] .start-button__screen::before { content: "--"; letter-spacing: -1px; }
 
-/* smooth fade when the theme palette changes */
+/* fade when the theme changes */
 body { transition: background-color 0.35s ease; }
 
-/* process tabs — flex:1 makes them share the bar evenly, capped per tab */
+/* process tabs: flex:1 shares the bar evenly, capped per tab */
 .process-bar {
   flex: 1;
   display: flex;
@@ -529,9 +524,7 @@ body { transition: background-color 0.35s ease; }
 .tray__speaker { font-size: 18px; line-height: 1; }
 .tray__clock { font-family: var(--font-display); font-size: 12px; white-space: nowrap; }
 
-/* ============================================================================
- *  START MENU
- * ========================================================================== */
+/* start menu */
 .start-menu {
   position: fixed;
   left: 10px;
@@ -573,11 +566,25 @@ body { transition: background-color 0.35s ease; }
 .start-menu__item:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
 .start-menu__icon { width: 24px; height: 24px; image-rendering: pixelated; }
 
-/* ---- upgraded start-menu pieces ---- */
+/* start-menu pieces */
 .start-menu__banner {
   display: flex; align-items: center; gap: 10px; padding: 12px;
-  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
   color: #fff;
+  /* dithered gradient bar: a posterized purple ramp plus a 2px checkerboard of
+     the lighter purple, so it reads as an ordered-dither blend instead of a
+     smooth gradient. only the two theme purples are used (color-mix derives the
+     in-between steps), so the bar tracks the active theme. */
+  background-color: var(--purple);
+  background-image:
+    repeating-conic-gradient(var(--purple-hi) 0 25%, transparent 0 50%),
+    linear-gradient(180deg,
+      var(--purple-hi) 0 16.66%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 33%) 16.66% 33.33%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 50%) 33.33% 50%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 67%) 50% 66.66%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 83%) 66.66% 83.33%,
+      var(--purple) 83.33% 100%);
+  background-size: 2px 2px, 100% 100%;
 }
 .start-menu__avatar {
   width: 40px; height: 40px; flex-shrink: 0; overflow: hidden;
@@ -646,9 +653,7 @@ body { transition: background-color 0.35s ease; }
 .theme-chip--on { outline: 2px solid var(--accent); }
 .theme-chip__sw { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid var(--bevel-lo2); }
 
-/* ============================================================================
- *  SYSTEM OVERLAYS — boot splash, CRT power off/on, run dialog
- * ========================================================================== */
+/* system overlays: boot, power off/on, run dialog */
 .boot {
   position: fixed; inset: 0; z-index: 9500; background: #0b0b14;
   display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
@@ -699,18 +704,13 @@ body { transition: background-color 0.35s ease; }
 }
 .run__out { margin: 10px 0 0; min-height: 22px; white-space: pre-wrap; word-break: break-word; font-family: var(--font-body); font-size: 18px; color: var(--purple); }
 
-/* ============================================================================
- *  RESPONSIVE
- * ========================================================================== */
-/* ============================================================================
- *  MOBILE / TOUCH SHELL
- *  Toggled by JS via body.mobile-mode (see os.js). Everything above is the
- *  untouched desktop experience; these rules only reshape phones / small touch
- *  screens into a home-grid + full-screen-app + switcher layout.
- * ========================================================================== */
+/* mobile / touch shell
+   toggled by js via body.mobile-mode (see os.js). everything above is the
+   desktop layout; these rules only kick in on phones / small touch screens:
+   home-grid + full-screen apps + app switcher. */
 body.mobile-mode { --bar-h: 60px; }
 
-/* Desktop icons become a centered home-screen grid */
+/* icons become a centered home grid */
 body.mobile-mode .icon-layer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
@@ -720,7 +720,7 @@ body.mobile-mode .icon-layer {
 }
 body.mobile-mode .desktop-icon { width: 100%; }
 
-/* Windows become full-screen app views — no dragging, no chrome shadow */
+/* windows go full-screen, no dragging or shadow */
 body.mobile-mode .window {
   left: 0 !important;
   top: 0 !important;
@@ -737,12 +737,12 @@ body.mobile-mode .window {
 body.mobile-mode .window__bar { cursor: default; padding: 10px 8px; }
 body.mobile-mode .window__title { font-size: 12px; }
 
-/* Thumb-friendly window controls (~44px tall target) */
+/* bigger touch targets (~44px) */
 body.mobile-mode .window__btn { width: 44px; height: 38px; font-size: 13px; }
 
 body.mobile-mode .game-card { grid-template-columns: 1fr; }
 
-/* Taskbar becomes a scrollable app switcher */
+/* taskbar becomes a scrollable app switcher */
 body.mobile-mode .start-button { padding: 0 12px; }
 body.mobile-mode .start-button__text { display: none; }
 body.mobile-mode .tray__speaker { display: none; }
@@ -757,7 +757,7 @@ body.mobile-mode .process-tab__label,
 body.mobile-mode .process-tab__hint { display: none; }
 body.mobile-mode .process-tab__icon { width: 26px; height: 26px; }
 
-/* Start menu opens as a full-width bottom sheet */
+/* start menu opens as a bottom sheet */
 body.mobile-mode .start-menu {
   left: 6px;
   right: 6px;
@@ -766,75 +766,57 @@ body.mobile-mode .start-menu {
 }
 body.mobile-mode .start-menu__item { padding: 14px 10px; font-size: 12px; }
 
-/* ============================================================================
- *  ACCESSIBILITY
- * ========================================================================== */
+/* accessibility */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; }
 }
 
-  </style>
+</style>
 </head>
 <body>
+  <!-- desktop + windows are built from js/config.js -->
   <main id="desktop" class="desktop" aria-label="Desktop">
-    <div id="icon-layer" class="icon-layer"></div>
-    <div id="window-layer" class="window-layer"></div>
+    <div id="icon-layer" class="icon-layer"><!-- desktop icons injected --></div>
+    <div id="window-layer" class="window-layer"><!-- windows injected --></div>
   </main>
+
+  <!-- Start menu -->
   <nav id="start-menu" class="start-menu" aria-label="Start menu"></nav>
+
+  <!-- Taskbar -->
   <footer class="taskbar" aria-label="Taskbar">
-    <button id="start-button" class="start-button" type="button" aria-haspopup="true" aria-expanded="false">
-      <span class="start-button__face" aria-hidden="true"><span class="start-button__screen"></span></span>
-      <span class="start-button__text">start</span>
+    <button
+      id="start-button"
+      class="start-button"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <span class="start-button__face" aria-hidden="true">
+        <span class="start-button__screen"></span>
+      </span>
+      <span class="start-button__text">Start</span>
     </button>
-    <div id="process-bar" class="process-bar"></div>
+
+    <div id="process-bar" class="process-bar"><!-- running app tabs injected --></div>
+
     <div class="tray">
-      <span class="tray__speaker" aria-hidden="true">&#128266;</span>
+      <span class="tray__speaker" aria-hidden="true">🔊</span>
       <span id="clock" class="tray__clock">--:--</span>
     </div>
   </footer>
+
+  <!-- load order: data, then view, then engine -->
   <script>
-/* ============================================================================
- *  config.js  —  THE CENTRAL REGISTRY  (data only, no logic)
- * ============================================================================
- *  This is the ONLY file you need to touch to add, remove, or edit apps.
- *  Add a new object to the APPS array and the desktop icon, window, start-menu
- *  entry, and taskbar tab are all generated automatically.
- *
- *  Each app object:
- *    id        unique string, no spaces            (e.g. "music")
- *    title     label shown under the icon + tab    (e.g. "music")
- *    icon      path to a pixel-art PNG for the icon (see assets/icons/)
- *    width     opening window width  in px
- *    height    opening window height in px
- *    type      which renderer to use:
- *                "carousel" | "gallery" | "document"   (content layouts)
- *                "game" | "iframe"                      (embed a playable app)
- *                "link"                                 (open a URL, no window)
- *    data      content for that renderer (shape depends on `type`, see below)
- *
- *  OPTIONAL per-app fields:
- *    multi     true  -> every launch opens a NEW window/process (e.g. games)
- *              false -> single window; clicking the icon refocuses it (default)
- *    flush     true  -> body has no padding (set automatically for game/iframe)
- *
- *  MEDIA PLACEHOLDERS
- *    Leave any image / video path as an empty string ("") to show a labeled
- *    placeholder box. Drop in your real file path when ready and it appears.
- *    Image paths get an automatic fallback to a placeholder if the file is
- *    missing, so a wrong path never shows a broken-image icon.
- * ========================================================================== */
+// config.js
+// App list (APPS) and system settings (SYSTEM). Data only, no logic.
 
 const APPS = [
 
-  /* ----------------------------------------------------------------------
-   *  GAMES  —  carousel of projects
-   *  data.items[] = { title, description, contribution, artwork[], video }
-   *    artwork : array of image paths (drop in assets/games/)
-   *    video   : single video path  (drop in assets/games/), "" = placeholder
-   * -------------------------------------------------------------------- */
+  // games carousel
   {
     id: "games",
-    title: "games",
+    title: "Games",
     icon: "assets/icons/games.png",
     width: 760,
     height: 560,
@@ -842,33 +824,52 @@ const APPS = [
     data: {
       items: [
         {
-          title: "PROJECT ONE",
+          title: "Ghost for Hire",
           description:
-            "A short pitch for the game goes here — genre, hook, platform, " +
-            "and the feeling you wanted players to walk away with.",
+            "Ghost for Hire is an eight-person team project where you play " +
+            "as a ghost hired to scare humans out of an area.",
           contribution:
-            "What you specifically built: systems, levels, tools, pipelines. " +
-            "Be concrete — “designed the combat loop and authored 12 levels.”",
-          artwork: ["", ""],          // e.g. ["assets/games/p1-key.png", "assets/games/p1-screen.png"]
-          video: ""                   // e.g. "assets/games/p1-gameplay.mp4"
-        },
-        {
-          title: "PROJECT TWO",
-          description:
-            "Second project blurb. Keep it to a couple of sentences so the " +
-            "card stays scannable.",
-          contribution:
-            "Your role on this one. Mention team size and what you owned.",
+            "I worked mostly on gameplay: implementing the designed abilities, " +
+            "handling player controls, and catching the edge cases those " +
+            "abilities introduced. I also did the majority of the UI " +
+            "programming, using a mix of C++ and Blueprints. For example, I " +
+            "wrote several custom functions in the C++ widget class to handle " +
+            "complex logic, then exposed them so my teammates could call them " +
+            "for UI needs like ability checks, icon changes, and value tweaks.",
           artwork: ["", ""],
           video: ""
         },
         {
-          title: "PROJECT THREE",
+          title: "Spellgun Sprint",
           description:
-            "Third project blurb. Swap in as many or as few projects as you " +
-            "like — the carousel sizes itself to the list.",
+            "Spellgun Sprint is a high-fantasy speedrun shooter that mixes " +
+            "guns and magic. You're a wizard-artificer who has just been " +
+            "kicked out of your own tower by a meddling druid set on " +
+            "destroying your life's work. Use your Spellgun technology to " +
+            "fight back and reclaim your home. Time is of the essence!",
           contribution:
-            "Your role here. Link the impact: shipped, awards, downloads.",
+            "I worked on character models, hero assets, and lighting.",
+          artwork: ["", ""],
+          video: ""
+        },
+        {
+          title: "The Collector",
+          description:
+            "The Collector is a platformer where you play a thief making your " +
+            "escape from the city, helping yourself to a few valuables on the " +
+            "way out.",
+          contribution:
+            "This was a solo project and my first ever in Unreal Engine. I " +
+            "learned to create complex actors, work with node-based shaders, " +
+            "and get to grips with Blueprints. I built a rudimentary AI that " +
+            "attacks the player when they are in sight and lit. To do it, I " +
+            "made a collision box covering the lit area and tied the AI's " +
+            "behaviour and movement to that box, which sold the illusion that " +
+            "the enemy could only see the player in the light. The AI had " +
+            "three states: patrol, chase, and attack. It patrolled while the " +
+            "player was unseen, closed the distance when the player was " +
+            "spotted but far off, and attacked once in range, dealing damage " +
+            "until the player broke line of sight.",
           artwork: [""],
           video: ""
         }
@@ -876,17 +877,10 @@ const APPS = [
     }
   },
 
-  /* ----------------------------------------------------------------------
-   *  ART  —  gallery grid
-   *  data.artstationUrl : your default profile link
-   *  data.pieces[] = { title, image, description, tools[], link }
-   *    image : path (drop in assets/art/), "" = placeholder
-   *    tools : array of strings, e.g. ["Photoshop", "Aseprite"]
-   *    link  : optional per-piece link; falls back to artstationUrl
-   * -------------------------------------------------------------------- */
+  // art gallery
   {
     id: "art",
-    title: "art",
+    title: "Art",
     icon: "assets/icons/art.png",
     width: 820,
     height: 600,
@@ -896,10 +890,10 @@ const APPS = [
       pieces: [
         {
           title: "Piece One",
-          image: "",                  // e.g. "assets/art/piece1.png"
-          description: "A line about the piece — brief, medium, or the idea.",
+          image: "",
+          description: "A line about the piece, the brief, medium, or idea.",
           tools: ["Photoshop", "Aseprite"],
-          link: ""                    // optional direct link to this piece
+          link: ""
         },
         {
           title: "Piece Two",
@@ -926,31 +920,34 @@ const APPS = [
     }
   },
 
-  /* ----------------------------------------------------------------------
-   *  ABOUT ME  —  document
-   *  data.name     : heading
-   *  data.role     : subheading / tagline
-   *  data.bio[]    : array of paragraphs
-   *  data.resumeUrl: path to your resume file (drop in assets/), "" disables
-   *  data.links[]  : optional { label, url } contact rows
-   * -------------------------------------------------------------------- */
+  // about me document
   {
     id: "about",
-    title: "about me",
+    title: "About Me",
     icon: "assets/icons/about.png",
     width: 560,
     height: 600,
     type: "document",
     data: {
       name: "YOUR NAME",
-      role: "Game Developer · Pixel Artist",
+      role: "Game Developer, 3D Artist, Technical Artist, Programmer",
       bio: [
-        "Write a couple of friendly sentences about who you are and what " +
-          "you make. Keep the first line strong — it’s the hook.",
-        "A second paragraph for background: where you’ve worked, what you " +
-          "care about, and the kind of projects you want next."
+        "I'm a game developer with a Master of Science, working across " +
+          "gameplay programming, 3D art, and technical art. I'm happy taking " +
+          "a feature from design to a shipped, edge-case-proof build, and I " +
+          "like sitting in the overlap between engineering and art where the " +
+          "two have to meet.",
+        "In Unreal Engine I've built complex actors, node-based shaders, and " +
+          "stateful enemy AI, and I work fluently across C++ and Blueprints, " +
+          "often writing custom C++ functions that give teammates clean hooks " +
+          "to build on. On the art side I've handled character models, hero " +
+          "assets, and lighting; on the programming side I've owned gameplay " +
+          "systems, player controls, and UI. Recent projects span an " +
+          "eight-person team game (Ghost for Hire), a fast-paced fantasy " +
+          "shooter (Spellgun Sprint), and a solo Unreal platformer (The " +
+          "Collector)."
       ],
-      resumeUrl: "",                  // e.g. "assets/resume.pdf"
+      resumeUrl: "",
       links: [
         { label: "Email", url: "mailto:you@example.com" },
         { label: "GitHub", url: "https://github.com/your-handle" }
@@ -958,54 +955,37 @@ const APPS = [
     }
   },
 
-  /* ----------------------------------------------------------------------
-   *  PLAYABLE GAME  —  template (duplicate this block per game)
-   *  Put your exported game in its own folder, e.g.  games/mygame/index.html
-   *  (a Construct/Phaser/Godot/PICO-8/Kaboom/plain-canvas export), then point
-   *  data.src at that index.html. Each click launches its own window/process.
-   * -------------------------------------------------------------------- */
   {
     id: "mygame",
-    title: "my game",
-    icon: "assets/icons/mygame.png",   // a cartridge PNG for this game
+    title: "My Game",
+    icon: "assets/icons/mygame.png",
     width: 820,
     height: 640,
     type: "game",
-    multi: true,                        // allow multiple play sessions at once
+    multi: true,
     data: {
-      src: ""                           // e.g. "games/mygame/index.html"
+      src: ""
     }
   }
 
-  /* ----------------------------------------------------------------------
-   *  EXTRA ICON IDEAS (uncomment / adapt):
-   *
-   *  // A desktop shortcut that opens an external link in a new tab:
-   *  ,{
-   *    id: "itch", title: "itch.io", icon: "assets/icons/itch.png",
-   *    type: "link", data: { url: "https://your-name.itch.io" }
-   *  }
-   * -------------------------------------------------------------------- */
-
 ];
 
-/* ============================================================================
- *  SYSTEM  —  start-menu identity, pinned links, themes, run-dialog jokes
- *  Data only; the engine (os.js) renders all of this. Edit freely.
- * ========================================================================== */
+// SYSTEM
+// start-menu identity, pinned links, themes, run-dialog replies.
+// data only, os.js renders all of it.
 const SYSTEM = {
 
-  /* Banner at the top of the start menu */
+  // start-menu banner
   user: {
     name: "YOUR NAME",
-    status: "online \u00B7 open to work",
-    avatar: "assets/icons/avatar.png"   // square pixel portrait; "" -> initial letter
+    status: "Online \u00B7 Open to work",
+    avatar: "assets/icons/avatar.png"
   },
 
-  /* Text on the boot / power-on splash */
+  // boot splash text
   boot: { title: "PORTFOLIO OS", subtitle: "v1.0  \u2014  press start" },
 
-  /* Pinned links (open in a new tab). Swap in your real URLs. */
+  // pinned links (open in a new tab)
   links: [
     { label: "GitHub",     url: "https://github.com/your-handle" },
     { label: "ArtStation", url: "https://www.artstation.com/your-profile-here" },
@@ -1013,8 +993,7 @@ const SYSTEM = {
     { label: "Email",      url: "mailto:you@example.com" }
   ],
 
-  /* Desktop colour themes. Each key in `vars` maps to a CSS variable; the first
-     theme is the default. Add your own — only the listed vars are swapped. */
+  // colour themes
   themes: [
     { id: "teal",    name: "Teal (default)", vars: { "--desktop": "#3fb6c6", "--purple": "#5b3fa0", "--purple-hi": "#8a63d6", "--accent": "#ff4d8d", "--accent-2": "#ffd23f", "--blue": "#3c7bd4" } },
     { id: "sunset",  name: "Sunset",         vars: { "--desktop": "#e98a5b", "--purple": "#7d3a86", "--purple-hi": "#b95ca6", "--accent": "#ff5d73", "--accent-2": "#ffd23f", "--blue": "#e0556e" } },
@@ -1023,9 +1002,7 @@ const SYSTEM = {
     { id: "gameboy", name: "Game Boy",       vars: { "--desktop": "#8bac0f", "--purple": "#306230", "--purple-hi": "#9bbc0f", "--accent": "#306230", "--accent-2": "#0f380f", "--blue": "#306230" } }
   ],
 
-  /* Easter-egg replies for the Run… dialog. Keys are lowercased commands.
-     Anything not here that matches an app id/title launches that app instead.
-     Built-ins already handled: <app name>, "theme <name>", shutdown, restart, clear. */
+  // run dialog replies
   run: {
     help:   "commands: <app name>, theme <name>, shutdown, restart, clear, help",
     hello:  "Hello, user. :)",
@@ -1038,21 +1015,17 @@ const SYSTEM = {
 
 };
 
-/* Make available to the renderers + engine (both load after this file). */
+// renderers + engine load after this file
 window.APPS = APPS;
 window.SYSTEM = SYSTEM;
 
-  </script>
+</script>
   <script>
-/* ============================================================================
- *  renderers.js  —  THE VIEW LAYER
- * ============================================================================
- *  Turns an app's `data` into the DOM that fills its window body.
- *  One function per `type` declared in config.js. To support a brand-new
- *  layout, add a key here and reference it as `type` in config.js.
- * ========================================================================== */
+// renderers.js
+// builds the DOM that goes inside each window body. one function per app
+// type from config.js.
 
-/* --- tiny helpers --------------------------------------------------------- */
+// helpers
 
 function esc(str) {
   const d = document.createElement("div");
@@ -1067,8 +1040,8 @@ function el(tag, className, html) {
   return node;
 }
 
-/* Image slot: real <img> when a path is given (with a graceful fallback to a
- * placeholder if the file is missing), otherwise a labeled placeholder box. */
+// real <img> when a path is given (falls back to a placeholder if the file
+// is missing), otherwise a placeholder box.
 function mediaImage(src, label) {
   if (src && src.trim()) {
     const img = el("img", "pix-img");
@@ -1081,8 +1054,8 @@ function mediaImage(src, label) {
   return placeholder(label || "image");
 }
 
-/* Video slot: real <video controls> when a path is given, else a placeholder
- * styled like a play button. */
+// real <video controls> when a path is given, else a placeholder styled like
+// a play button.
 function mediaVideo(src, label) {
   if (src && src.trim()) {
     const v = el("video", "pix-video");
@@ -1103,13 +1076,12 @@ function placeholder(label) {
   return box;
 }
 
-/* ========================================================================== */
-/*  RENDERERS                                                                 */
-/* ========================================================================== */
+// renderers
+
 
 const RENDERERS = {
 
-  /* ---- CAROUSEL (games) ------------------------------------------------- */
+  // carousel (games)
   carousel(app) {
     const items = (app.data && app.data.items) || [];
     const root = el("div", "carousel");
@@ -1157,7 +1129,7 @@ const RENDERERS = {
       const info = el("div", "game-card__info");
       info.appendChild(el("h2", "game-card__title", esc(game.title)));
       info.appendChild(el("p", "game-card__desc", esc(game.description)));
-      info.appendChild(el("h3", "field-label", "MY WORK"));
+      info.appendChild(el("h3", "field-label", "My Work"));
       info.appendChild(el("p", "game-card__role", esc(game.contribution)));
 
       card.append(media, info);
@@ -1181,15 +1153,15 @@ const RENDERERS = {
     return root;
   },
 
-  /* ---- GALLERY (art) ---------------------------------------------------- */
+  // gallery (art)
   gallery(app) {
     const data = app.data || {};
     const pieces = data.pieces || [];
     const root = el("div", "gallery");
 
-    /* header with the prominent ArtStation link */
+    // header with the artstation link
     const header = el("div", "gallery__header");
-    header.appendChild(el("p", "gallery__intro", "Selected work"));
+    header.appendChild(el("p", "gallery__intro", "Selected Work"));
     if (data.artstationUrl) {
       const a = el("a", "os-btn os-btn--accent", "View full ArtStation ↗");
       a.href = data.artstationUrl;
@@ -1234,7 +1206,7 @@ const RENDERERS = {
     return root;
   },
 
-  /* ---- DOCUMENT (about me) --------------------------------------------- */
+  // document (about me)
   document(app) {
     const data = app.data || {};
     const root = el("div", "doc");
@@ -1265,19 +1237,16 @@ const RENDERERS = {
       dl.setAttribute("download", "");
       root.appendChild(dl);
     } else {
-      const disabled = el("span", "os-btn doc__resume doc__resume--off", "Résumé — add a file in config.js");
+      const disabled = el("span", "os-btn doc__resume doc__resume--off", "Résumé (add a file in config.js)");
       root.appendChild(disabled);
     }
 
     return root;
   },
 
-  /* ---- GAME / IFRAME (playable HTML5 games) ----------------------------
-   * data.src : path to the game's own index.html
-   *            (e.g. "games/mygame/index.html" — relative to the site root)
-   * Runs the game inside a sandboxed iframe so its canvas, scripts, and
-   * keyboard input stay isolated from the OS shell — i.e. its own process.
-   * Leave src "" to show a "drop your game here" placeholder. */
+  // game / iframe (playable html5 games)
+  // runs in a sandboxed iframe so its canvas/scripts/input stay separate from
+  // the shell.
   game(app) {
     const data = app.data || {};
     const root = el("div", "game-frame");
@@ -1295,8 +1264,8 @@ const RENDERERS = {
     frame.title = app.title;
     frame.setAttribute("allow", "autoplay; fullscreen; gamepad; xr-spatial-tracking");
     frame.setAttribute("allowfullscreen", "");
-    /* Sandbox isolates the game. allow-same-origin is needed by most engine
-     * exports (asset loading, WASM); drop it if you ever embed a 3rd-party game. */
+    // allow-same-origin is needed by most engine exports (asset/WASM loading);
+    // drop it if you embed a third-party game.
     frame.setAttribute(
       "sandbox",
       "allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-fullscreen allow-forms"
@@ -1306,7 +1275,7 @@ const RENDERERS = {
   }
 };
 
-/* "iframe" is an alias for the same renderer (embed any web page/app). */
+// "iframe" uses the same renderer (embed any page/app)
 RENDERERS.iframe = RENDERERS.game;
 
 function emptyState(title, hint) {
@@ -1316,7 +1285,7 @@ function emptyState(title, hint) {
   return box;
 }
 
-/* Resolve a renderer for an app, with a clear fallback. */
+// pick a renderer for an app, with a fallback
 function renderApp(app) {
   const fn = RENDERERS[app.type];
   if (typeof fn === "function") return fn(app);
@@ -1325,21 +1294,14 @@ function renderApp(app) {
 
 window.renderApp = renderApp;
 
-  </script>
+</script>
   <script>
-/* ============================================================================
- *  os.js  —  THE ENGINE  (window manager + taskbar + start menu + clock)
- * ============================================================================
- *  Generic and config-driven: it never names a specific app. Everything it
- *  shows is derived from window.APPS (config.js) + window.renderApp (renderers).
- *
- *  INSTANCE MODEL
- *    Every launch is its own "process": a unique instanceId, its own window and
- *    its own taskbar tab. Apps are single-window by default (clicking the icon
- *    refocuses the existing window). Set `multi: true` on an app in config.js to
- *    let it spawn a fresh, independent instance on every launch — useful for
- *    games you might want open more than once at a time.
- * ========================================================================== */
+// os.js
+// window manager + taskbar + start menu + clock. driven by window.APPS
+// (config.js) and window.renderApp (renderers.js), doesn't hardcode any app.
+//
+// every launch is its own instance: a unique id, its own window and taskbar
+// tab. apps are single-window by default (clicking the icon refocuses).
 
 (function () {
   "use strict";
@@ -1347,7 +1309,7 @@ window.renderApp = renderApp;
   const APPS = window.APPS || [];
   const byId = Object.fromEntries(APPS.map((a) => [a.id, a]));
 
-  /* DOM anchors (created in index.html) */
+  // DOM anchors from index.html
   const desktop = document.getElementById("desktop");
   const iconLayer = document.getElementById("icon-layer");
   const windowLayer = document.getElementById("window-layer");
@@ -1356,9 +1318,9 @@ window.renderApp = renderApp;
   const startMenu = document.getElementById("start-menu");
   const clockEl = document.getElementById("clock");
 
-  /* Shell mode: desktop (draggable windows) vs mobile (full-screen apps +
-     switcher). ONE source of truth, shared with the CSS via body.mobile-mode,
-     so the layout and the behaviour can never disagree. */
+  // desktop (draggable windows) vs mobile (full-screen apps + switcher).
+  // shared with the css through body.mobile-mode so layout and behaviour
+  // stay in sync.
   const mobileMQ = window.matchMedia(
     "(max-width: 820px), (pointer: coarse) and (max-width: 1024px)"
   );
@@ -1367,13 +1329,12 @@ window.renderApp = renderApp;
     document.body.classList.toggle("mobile-mode", mobileMQ.matches);
   }
 
-  /* Live registry of open processes: instanceId -> { instanceId, app, win, tab, minimized } */
+  // open instances: instanceId -> { instanceId, app, win, tab, minimized }
   const open = new Map();
   let zTop = 10;
-  let spawnCount = 0;
   let instanceSeq = 0;
 
-  /* ---- small helpers ---------------------------------------------------- */
+  // helpers
   function el(tag, className, html) {
     const n = document.createElement(tag);
     if (className) n.className = className;
@@ -1381,7 +1342,7 @@ window.renderApp = renderApp;
     return n;
   }
 
-  /* Icon image with a CSS placeholder fallback if the PNG is missing. */
+  // icon image, falls back to a css placeholder if the png is missing
   function iconImg(app, extraClass) {
     const img = el("img", "app-icon-img" + (extraClass ? " " + extraClass : ""));
     img.alt = "";
@@ -1405,9 +1366,7 @@ window.renderApp = renderApp;
     return n;
   }
 
-  /* ======================================================================= */
-  /*  DESKTOP ICONS                                                          */
-  /* ======================================================================= */
+  // desktop icons
   function buildIcons() {
     iconLayer.innerHTML = "";
     APPS.forEach((app) => {
@@ -1421,22 +1380,20 @@ window.renderApp = renderApp;
     });
   }
 
-  /* ======================================================================= */
-  /*  LAUNCHING / WINDOWS                                                    */
-  /* ======================================================================= */
+  // launching / windows
 
-  /* Decide whether to focus an existing window or spawn a new process. */
+  // focus an existing window or spawn a new one
   function launch(appId) {
     const app = byId[appId];
     if (!app) return;
 
-    /* "link" apps just open a URL in a new tab, no window */
+    // link apps just open a url
     if (app.type === "link" && app.data && app.data.url) {
       window.open(app.data.url, "_blank", "noopener");
       return;
     }
 
-    /* single-window apps (default): refocus the existing window if open */
+    // single-window apps: refocus if already open
     if (!app.multi) {
       const existing = firstInstanceOf(appId);
       if (existing) {
@@ -1452,23 +1409,34 @@ window.renderApp = renderApp;
   function spawnWindow(app) {
     const instanceId = app.id + "#" + ++instanceSeq;
 
-    /* ---- window shell ---- */
+    // window shell
     const win = el("div", "window");
     win.dataset.instance = instanceId;
     win.style.width = (app.width || 640) + "px";
     win.style.height = (app.height || 480) + "px";
 
-    /* staggered spawn so stacked windows don't fully overlap */
-    const offset = (spawnCount % 6) * 28;
-    win.style.left = 120 + offset + "px";
-    win.style.top = 70 + offset + "px";
-    spawnCount++;
+    // desktop: open at a random spot that keeps the whole window on screen.
+    // mobile opens full-screen via css, so this only affects desktop.
+    if (!isMobile()) {
+      const margin = 16;
+      const barH = parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue("--bar-h")
+      ) || 56;
+      const w = app.width || 640, h = app.height || 480;
+      const maxLeft = Math.max(margin, window.innerWidth - w - margin);
+      const maxTop = Math.max(margin, window.innerHeight - barH - h - margin);
+      win.style.left = Math.round(margin + Math.random() * (maxLeft - margin)) + "px";
+      win.style.top = Math.round(margin + Math.random() * (maxTop - margin)) + "px";
+    } else {
+      win.style.left = "0px";
+      win.style.top = "0px";
+    }
 
-    /* ---- title bar ---- */
+    // title bar
     const bar = el("div", "window__bar");
     const titleWrap = el("div", "window__title");
     titleWrap.appendChild(iconImg(app, "window__title-icon"));
-    /* number repeat instances of the same app: "my game (2)" */
+    // number repeat instances: "my game (2)"
     const n = countInstancesOf(app.id);
     const label = n > 0 ? app.title + " (" + (n + 1) + ")" : app.title;
     titleWrap.appendChild(el("span", null, label));
@@ -1483,8 +1451,7 @@ window.renderApp = renderApp;
     controls.append(minBtn, closeBtn);
     bar.appendChild(controls);
 
-    /* ---- body (filled by the view layer) ---- */
-    /* game/iframe apps render edge-to-edge with no padding */
+    // body (filled by renderers). game/iframe render edge-to-edge.
     const flush = app.type === "game" || app.type === "iframe" || app.flush;
     const body = el("div", "window__body" + (flush ? " window__body--flush" : ""));
     body.appendChild(window.renderApp(app));
@@ -1492,7 +1459,7 @@ window.renderApp = renderApp;
     win.append(bar, body);
     windowLayer.appendChild(win);
 
-    /* ---- taskbar process tab ---- */
+    // taskbar tab
     const tab = el("button", "process-tab");
     tab.type = "button";
     tab.dataset.instance = instanceId;
@@ -1503,7 +1470,7 @@ window.renderApp = renderApp;
 
     open.set(instanceId, { instanceId, app, win, tab, minimized: false });
 
-    /* ---- behaviour wiring ---- */
+    // wiring
     minBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       minimizeWindow(instanceId);
@@ -1549,7 +1516,7 @@ window.renderApp = renderApp;
     entry.win.classList.remove("window--minimized");
   }
 
-  /* Clicking a tab: minimize if it's the focused window, else restore + focus */
+  // tab click: minimize if focused, else restore + focus
   function toggleFromTab(iid) {
     const entry = open.get(iid);
     if (!entry) return;
@@ -1569,7 +1536,7 @@ window.renderApp = renderApp;
     entry.tab.remove();
     open.delete(iid);
     layoutTabs();
-    /* hand focus to the next-highest window, if any */
+    // focus the next-highest window, if any
     let topId = null;
     let topZ = -1;
     open.forEach((e, key) => {
@@ -1582,18 +1549,18 @@ window.renderApp = renderApp;
     if (topId) focusWindow(topId);
   }
 
-  /* Tabs grow to fill the bar evenly (CSS flex:1); count is exposed for tuning */
+  // tabs share the bar evenly (css flex:1); expose the count for tuning
   function layoutTabs() {
     processBar.style.setProperty("--tab-count", open.size);
   }
 
-  /* ---- dragging --------------------------------------------------------- */
+  // dragging
   function makeDraggable(win, handle) {
     let startX = 0, startY = 0, originLeft = 0, originTop = 0, dragging = false;
 
     function pointerDown(e) {
-      if (isMobile()) return;            /* full-screen app views aren't dragged */
-      if (e.target.closest(".window__controls")) return; /* not from buttons */
+      if (isMobile()) return;            // mobile app views aren't dragged
+      if (e.target.closest(".window__controls")) return; // not from buttons
       dragging = true;
       const pt = e.touches ? e.touches[0] : e;
       startX = pt.clientX;
@@ -1601,7 +1568,7 @@ window.renderApp = renderApp;
       originLeft = win.offsetLeft;
       originTop = win.offsetTop;
       document.body.classList.add("is-dragging");
-      /* block iframe from swallowing the mouse mid-drag */
+      // stop the iframe swallowing the mouse mid-drag
       win.classList.add("window--dragging");
       window.addEventListener("mousemove", pointerMove);
       window.addEventListener("mouseup", pointerUp);
@@ -1634,19 +1601,17 @@ window.renderApp = renderApp;
     handle.addEventListener("touchstart", pointerDown, { passive: true });
   }
 
-  /* ======================================================================= */
-  /*  SYSTEM: storage, sound, face, themes                                   */
-  /* ======================================================================= */
+  // storage, sound, face, themes
   const SYSTEM = window.SYSTEM || {};
   const THEMES = SYSTEM.themes || [];
 
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
 
-  /* persistence that silently no-ops where storage is blocked (sandboxes) */
+  // storage that no-ops where it's blocked (sandboxes)
   function storeGet(k) { try { return localStorage.getItem("pos." + k); } catch (e) { return null; } }
   function storeSet(k, v) { try { localStorage.setItem("pos." + k, v); } catch (e) {} }
 
-  /* ---- retro sound via Web Audio (no asset files needed) ---- */
+  // retro sound via web audio, no asset files
   let audioCtx = null;
   let muted = storeGet("muted") === "1";
   function ac() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return audioCtx; }
@@ -1680,7 +1645,7 @@ window.renderApp = renderApp;
   const sfxDown = () => sweep(680, 70, 0.6, "sawtooth", 0.05);
   const sfxBoot = () => [392, 523, 659, 784].forEach((f, i) => tone(f, 0.12, "square", 0.04, i * 0.12));
 
-  /* ---- expressive start-button face ---- */
+  // start-button face
   let menuOpen = false, faceHover = false;
   function restFace() { return menuOpen ? "grin" : (faceHover ? "wink" : ""); }
   function applyFace() { const f = restFace(); if (f) startButton.dataset.face = f; else delete startButton.dataset.face; }
@@ -1692,7 +1657,7 @@ window.renderApp = renderApp;
     setInterval(() => { if (restFace() === "") flashFace("blink", 150); }, 3800);
   }
 
-  /* ---- desktop colour themes ---- */
+  // colour themes
   let currentTheme = (THEMES[0] && THEMES[0].id) || null;
   function applyTheme(id) {
     const t = THEMES.find((x) => x.id === id) || THEMES[0];
@@ -1706,9 +1671,7 @@ window.renderApp = renderApp;
       c.classList.toggle("theme-chip--on", c.dataset.theme === currentTheme));
   }
 
-  /* ======================================================================= */
-  /*  START MENU                                                             */
-  /* ======================================================================= */
+  // start menu
   function categoryOf(app) {
     if (app.category) return app.category;
     if (app.type === "link") return "Links";
@@ -1729,7 +1692,7 @@ window.renderApp = renderApp;
     startMenu.innerHTML = "";
     const u = SYSTEM.user || {};
 
-    /* identity banner */
+    // identity banner
     const banner = el("div", "start-menu__banner");
     const ava = el("div", "start-menu__avatar");
     if (u.avatar) {
@@ -1745,7 +1708,7 @@ window.renderApp = renderApp;
     banner.append(ava, who);
     startMenu.appendChild(banner);
 
-    /* search */
+    // search
     const search = el("div", "start-menu__search");
     const input = document.createElement("input");
     input.type = "text"; input.className = "start-menu__search-input";
@@ -1753,7 +1716,7 @@ window.renderApp = renderApp;
     search.appendChild(input);
     startMenu.appendChild(search);
 
-    /* scrollable, grouped app list */
+    // grouped app list
     const scroll = el("div", "start-menu__scroll");
     startMenu.appendChild(scroll);
 
@@ -1776,7 +1739,7 @@ window.renderApp = renderApp;
       scroll.appendChild(g);
     });
 
-    /* pinned links */
+    // pinned links
     const links = SYSTEM.links || [];
     if (links.length) {
       const g = el("div", "start-menu__group");
@@ -1793,7 +1756,7 @@ window.renderApp = renderApp;
       scroll.appendChild(g);
     }
 
-    /* system row: appearance / run / restart / shut down */
+    // appearance / run / restart / shut down
     const sys = el("div", "start-menu__system");
 
     const appearance = el("button", "start-menu__sys-item", "\uD83C\uDFA8 Appearance");
@@ -1865,9 +1828,7 @@ window.renderApp = renderApp;
     if (e.key === "Escape") setStartOpen(false);
   });
 
-  /* ======================================================================= */
-  /*  RUN… DIALOG                                                            */
-  /* ======================================================================= */
+  // run dialog
   let runOverlay = null;
   function openRun() {
     if (!runOverlay) runOverlay = buildRun();
@@ -1922,9 +1883,7 @@ window.renderApp = renderApp;
     out.textContent = "Unknown command: " + cmd + "   (try \u201Chelp\u201D)";
   }
 
-  /* ======================================================================= */
-  /*  BOOT SPLASH + POWER OFF / ON                                           */
-  /* ======================================================================= */
+  // boot splash + power off/on
   let bootOverlay = null, powerOverlay = null;
   function ensureBoot() {
     if (!bootOverlay) {
@@ -1944,7 +1903,7 @@ window.renderApp = renderApp;
     b.classList.add("boot--show");
     const fill = b.querySelector(".boot__fill");
     fill.style.transition = "none"; fill.style.width = "0%";
-    void b.offsetWidth;                       /* reflow so the bar animates from 0 */
+    void b.offsetWidth;                       // reflow so the bar animates from 0
     fill.style.transition = "width 1.3s steps(22)";
     fill.style.width = "100%";
     sfxBoot();
@@ -1970,7 +1929,7 @@ window.renderApp = renderApp;
   }
   function powerOff(opts) {
     const restart = !!(opts && opts.restart);
-    Array.from(open.keys()).forEach(closeWindow);   /* clean slate */
+    Array.from(open.keys()).forEach(closeWindow);   // close everything first
     setStartOpen(false); closeRun();
     sfxDown();
     const p = ensurePower();
@@ -1985,9 +1944,7 @@ window.renderApp = renderApp;
     }, 720);
   }
 
-  /* ======================================================================= */
-  /*  CLOCK                                                                  */
-  /* ======================================================================= */
+  // clock
   function tickClock() {
     const now = new Date();
     let h = now.getHours();
@@ -1997,12 +1954,9 @@ window.renderApp = renderApp;
     clockEl.textContent = h + ":" + m + " " + ampm;
   }
 
-  /* ======================================================================= */
-  /*  BOOT                                                                   */
-  /* ======================================================================= */
+  // startup
   const speaker = document.querySelector(".tray__speaker");
-  function renderMute() { if (speaker) speaker.textContent = muted ? "\uD83D\uDD07" : "\uD83D\uDD08"; }
-  if (speaker) {
+  function renderMute() { if (speaker) speaker.textContent = muted ? "\uD83D\uDD07" : "\uD83D\uDD08"; }  if (speaker) {
     speaker.style.cursor = "pointer";
     speaker.title = "Mute / unmute";
     speaker.addEventListener("click", () => {
@@ -2017,14 +1971,14 @@ window.renderApp = renderApp;
   initFace();
   applyShellMode();
   if (mobileMQ.addEventListener) mobileMQ.addEventListener("change", applyShellMode);
-  else if (mobileMQ.addListener) mobileMQ.addListener(applyShellMode); /* older Safari */
+  else if (mobileMQ.addListener) mobileMQ.addListener(applyShellMode); // old safari
   layoutTabs();
   tickClock();
   setInterval(tickClock, 1000);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRun(); });
-  runBoot();   /* first-load power-on splash */
+  runBoot();   // power-on splash on first load
 })();
 
-  </script>
+</script>
 </body>
 </html>

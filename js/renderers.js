@@ -1,12 +1,8 @@
-/* ============================================================================
- *  renderers.js  —  THE VIEW LAYER
- * ============================================================================
- *  Turns an app's `data` into the DOM that fills its window body.
- *  One function per `type` declared in config.js. To support a brand-new
- *  layout, add a key here and reference it as `type` in config.js.
- * ========================================================================== */
+// renderers.js
+// builds the DOM that goes inside each window body. one function per app
+// type from config.js.
 
-/* --- tiny helpers --------------------------------------------------------- */
+// helpers
 
 function esc(str) {
   const d = document.createElement("div");
@@ -21,8 +17,8 @@ function el(tag, className, html) {
   return node;
 }
 
-/* Image slot: real <img> when a path is given (with a graceful fallback to a
- * placeholder if the file is missing), otherwise a labeled placeholder box. */
+// real <img> when a path is given (falls back to a placeholder if the file
+// is missing), otherwise a placeholder box.
 function mediaImage(src, label) {
   if (src && src.trim()) {
     const img = el("img", "pix-img");
@@ -35,8 +31,8 @@ function mediaImage(src, label) {
   return placeholder(label || "image");
 }
 
-/* Video slot: real <video controls> when a path is given, else a placeholder
- * styled like a play button. */
+// real <video controls> when a path is given, else a placeholder styled like
+// a play button.
 function mediaVideo(src, label) {
   if (src && src.trim()) {
     const v = el("video", "pix-video");
@@ -57,13 +53,12 @@ function placeholder(label) {
   return box;
 }
 
-/* ========================================================================== */
-/*  RENDERERS                                                                 */
-/* ========================================================================== */
+// renderers
+
 
 const RENDERERS = {
 
-  /* ---- CAROUSEL (games) ------------------------------------------------- */
+  // carousel (games)
   carousel(app) {
     const items = (app.data && app.data.items) || [];
     const root = el("div", "carousel");
@@ -111,7 +106,7 @@ const RENDERERS = {
       const info = el("div", "game-card__info");
       info.appendChild(el("h2", "game-card__title", esc(game.title)));
       info.appendChild(el("p", "game-card__desc", esc(game.description)));
-      info.appendChild(el("h3", "field-label", "MY WORK"));
+      info.appendChild(el("h3", "field-label", "My Work"));
       info.appendChild(el("p", "game-card__role", esc(game.contribution)));
 
       card.append(media, info);
@@ -135,15 +130,15 @@ const RENDERERS = {
     return root;
   },
 
-  /* ---- GALLERY (art) ---------------------------------------------------- */
+  // gallery (art)
   gallery(app) {
     const data = app.data || {};
     const pieces = data.pieces || [];
     const root = el("div", "gallery");
 
-    /* header with the prominent ArtStation link */
+    // header with the artstation link
     const header = el("div", "gallery__header");
-    header.appendChild(el("p", "gallery__intro", "Selected work"));
+    header.appendChild(el("p", "gallery__intro", "Selected Work"));
     if (data.artstationUrl) {
       const a = el("a", "os-btn os-btn--accent", "View full ArtStation ↗");
       a.href = data.artstationUrl;
@@ -188,7 +183,7 @@ const RENDERERS = {
     return root;
   },
 
-  /* ---- DOCUMENT (about me) --------------------------------------------- */
+  // document (about me)
   document(app) {
     const data = app.data || {};
     const root = el("div", "doc");
@@ -219,19 +214,16 @@ const RENDERERS = {
       dl.setAttribute("download", "");
       root.appendChild(dl);
     } else {
-      const disabled = el("span", "os-btn doc__resume doc__resume--off", "Résumé — add a file in config.js");
+      const disabled = el("span", "os-btn doc__resume doc__resume--off", "Résumé (add a file in config.js)");
       root.appendChild(disabled);
     }
 
     return root;
   },
 
-  /* ---- GAME / IFRAME (playable HTML5 games) ----------------------------
-   * data.src : path to the game's own index.html
-   *            (e.g. "games/mygame/index.html" — relative to the site root)
-   * Runs the game inside a sandboxed iframe so its canvas, scripts, and
-   * keyboard input stay isolated from the OS shell — i.e. its own process.
-   * Leave src "" to show a "drop your game here" placeholder. */
+  // game / iframe (playable html5 games)
+  // runs in a sandboxed iframe so its canvas/scripts/input stay separate from
+  // the shell.
   game(app) {
     const data = app.data || {};
     const root = el("div", "game-frame");
@@ -249,8 +241,8 @@ const RENDERERS = {
     frame.title = app.title;
     frame.setAttribute("allow", "autoplay; fullscreen; gamepad; xr-spatial-tracking");
     frame.setAttribute("allowfullscreen", "");
-    /* Sandbox isolates the game. allow-same-origin is needed by most engine
-     * exports (asset loading, WASM); drop it if you ever embed a 3rd-party game. */
+    // allow-same-origin is needed by most engine exports (asset/WASM loading);
+    // drop it if you embed a third-party game.
     frame.setAttribute(
       "sandbox",
       "allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-fullscreen allow-forms"
@@ -260,7 +252,7 @@ const RENDERERS = {
   }
 };
 
-/* "iframe" is an alias for the same renderer (embed any web page/app). */
+// "iframe" uses the same renderer (embed any page/app)
 RENDERERS.iframe = RENDERERS.game;
 
 function emptyState(title, hint) {
@@ -270,7 +262,7 @@ function emptyState(title, hint) {
   return box;
 }
 
-/* Resolve a renderer for an app, with a clear fallback. */
+// pick a renderer for an app, with a fallback
 function renderApp(app) {
   const fn = RENDERERS[app.type];
   if (typeof fn === "function") return fn(app);

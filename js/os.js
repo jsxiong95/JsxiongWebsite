@@ -1,16 +1,9 @@
-/* ============================================================================
- *  os.js  —  THE ENGINE  (window manager + taskbar + start menu + clock)
- * ============================================================================
- *  Generic and config-driven: it never names a specific app. Everything it
- *  shows is derived from window.APPS (config.js) + window.renderApp (renderers).
- *
- *  INSTANCE MODEL
- *    Every launch is its own "process": a unique instanceId, its own window and
- *    its own taskbar tab. Apps are single-window by default (clicking the icon
- *    refocuses the existing window). Set `multi: true` on an app in config.js to
- *    let it spawn a fresh, independent instance on every launch — useful for
- *    games you might want open more than once at a time.
- * ========================================================================== */
+// os.js
+// window manager + taskbar + start menu + clock. driven by window.APPS
+// (config.js) and window.renderApp (renderers.js), doesn't hardcode any app.
+//
+// every launch is its own instance: a unique id, its own window and taskbar
+// tab. apps are single-window by default (clicking the icon refocuses).
 
 (function () {
   "use strict";
@@ -18,7 +11,7 @@
   const APPS = window.APPS || [];
   const byId = Object.fromEntries(APPS.map((a) => [a.id, a]));
 
-  /* DOM anchors (created in index.html) */
+  // DOM anchors from index.html
   const desktop = document.getElementById("desktop");
   const iconLayer = document.getElementById("icon-layer");
   const windowLayer = document.getElementById("window-layer");
@@ -27,9 +20,9 @@
   const startMenu = document.getElementById("start-menu");
   const clockEl = document.getElementById("clock");
 
-  /* Shell mode: desktop (draggable windows) vs mobile (full-screen apps +
-     switcher). ONE source of truth, shared with the CSS via body.mobile-mode,
-     so the layout and the behaviour can never disagree. */
+  // desktop (draggable windows) vs mobile (full-screen apps + switcher).
+  // shared with the css through body.mobile-mode so layout and behaviour
+  // stay in sync.
   const mobileMQ = window.matchMedia(
     "(max-width: 820px), (pointer: coarse) and (max-width: 1024px)"
   );
@@ -38,13 +31,12 @@
     document.body.classList.toggle("mobile-mode", mobileMQ.matches);
   }
 
-  /* Live registry of open processes: instanceId -> { instanceId, app, win, tab, minimized } */
+  // open instances: instanceId -> { instanceId, app, win, tab, minimized }
   const open = new Map();
   let zTop = 10;
-  let spawnCount = 0;
   let instanceSeq = 0;
 
-  /* ---- small helpers ---------------------------------------------------- */
+  // helpers
   function el(tag, className, html) {
     const n = document.createElement(tag);
     if (className) n.className = className;
@@ -52,7 +44,7 @@
     return n;
   }
 
-  /* Icon image with a CSS placeholder fallback if the PNG is missing. */
+  // icon image, falls back to a css placeholder if the png is missing
   function iconImg(app, extraClass) {
     const img = el("img", "app-icon-img" + (extraClass ? " " + extraClass : ""));
     img.alt = "";
@@ -76,9 +68,7 @@
     return n;
   }
 
-  /* ======================================================================= */
-  /*  DESKTOP ICONS                                                          */
-  /* ======================================================================= */
+  // desktop icons
   function buildIcons() {
     iconLayer.innerHTML = "";
     APPS.forEach((app) => {
@@ -92,22 +82,20 @@
     });
   }
 
-  /* ======================================================================= */
-  /*  LAUNCHING / WINDOWS                                                    */
-  /* ======================================================================= */
+  // launching / windows
 
-  /* Decide whether to focus an existing window or spawn a new process. */
+  // focus an existing window or spawn a new one
   function launch(appId) {
     const app = byId[appId];
     if (!app) return;
 
-    /* "link" apps just open a URL in a new tab, no window */
+    // link apps just open a url
     if (app.type === "link" && app.data && app.data.url) {
       window.open(app.data.url, "_blank", "noopener");
       return;
     }
 
-    /* single-window apps (default): refocus the existing window if open */
+    // single-window apps: refocus if already open
     if (!app.multi) {
       const existing = firstInstanceOf(appId);
       if (existing) {
@@ -123,23 +111,34 @@
   function spawnWindow(app) {
     const instanceId = app.id + "#" + ++instanceSeq;
 
-    /* ---- window shell ---- */
+    // window shell
     const win = el("div", "window");
     win.dataset.instance = instanceId;
     win.style.width = (app.width || 640) + "px";
     win.style.height = (app.height || 480) + "px";
 
-    /* staggered spawn so stacked windows don't fully overlap */
-    const offset = (spawnCount % 6) * 28;
-    win.style.left = 120 + offset + "px";
-    win.style.top = 70 + offset + "px";
-    spawnCount++;
+    // desktop: open at a random spot that keeps the whole window on screen.
+    // mobile opens full-screen via css, so this only affects desktop.
+    if (!isMobile()) {
+      const margin = 16;
+      const barH = parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue("--bar-h")
+      ) || 56;
+      const w = app.width || 640, h = app.height || 480;
+      const maxLeft = Math.max(margin, window.innerWidth - w - margin);
+      const maxTop = Math.max(margin, window.innerHeight - barH - h - margin);
+      win.style.left = Math.round(margin + Math.random() * (maxLeft - margin)) + "px";
+      win.style.top = Math.round(margin + Math.random() * (maxTop - margin)) + "px";
+    } else {
+      win.style.left = "0px";
+      win.style.top = "0px";
+    }
 
-    /* ---- title bar ---- */
+    // title bar
     const bar = el("div", "window__bar");
     const titleWrap = el("div", "window__title");
     titleWrap.appendChild(iconImg(app, "window__title-icon"));
-    /* number repeat instances of the same app: "my game (2)" */
+    // number repeat instances: "my game (2)"
     const n = countInstancesOf(app.id);
     const label = n > 0 ? app.title + " (" + (n + 1) + ")" : app.title;
     titleWrap.appendChild(el("span", null, label));
@@ -154,8 +153,7 @@
     controls.append(minBtn, closeBtn);
     bar.appendChild(controls);
 
-    /* ---- body (filled by the view layer) ---- */
-    /* game/iframe apps render edge-to-edge with no padding */
+    // body (filled by renderers). game/iframe render edge-to-edge.
     const flush = app.type === "game" || app.type === "iframe" || app.flush;
     const body = el("div", "window__body" + (flush ? " window__body--flush" : ""));
     body.appendChild(window.renderApp(app));
@@ -163,7 +161,7 @@
     win.append(bar, body);
     windowLayer.appendChild(win);
 
-    /* ---- taskbar process tab ---- */
+    // taskbar tab
     const tab = el("button", "process-tab");
     tab.type = "button";
     tab.dataset.instance = instanceId;
@@ -174,7 +172,7 @@
 
     open.set(instanceId, { instanceId, app, win, tab, minimized: false });
 
-    /* ---- behaviour wiring ---- */
+    // wiring
     minBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       minimizeWindow(instanceId);
@@ -220,7 +218,7 @@
     entry.win.classList.remove("window--minimized");
   }
 
-  /* Clicking a tab: minimize if it's the focused window, else restore + focus */
+  // tab click: minimize if focused, else restore + focus
   function toggleFromTab(iid) {
     const entry = open.get(iid);
     if (!entry) return;
@@ -240,7 +238,7 @@
     entry.tab.remove();
     open.delete(iid);
     layoutTabs();
-    /* hand focus to the next-highest window, if any */
+    // focus the next-highest window, if any
     let topId = null;
     let topZ = -1;
     open.forEach((e, key) => {
@@ -253,18 +251,18 @@
     if (topId) focusWindow(topId);
   }
 
-  /* Tabs grow to fill the bar evenly (CSS flex:1); count is exposed for tuning */
+  // tabs share the bar evenly (css flex:1); expose the count for tuning
   function layoutTabs() {
     processBar.style.setProperty("--tab-count", open.size);
   }
 
-  /* ---- dragging --------------------------------------------------------- */
+  // dragging
   function makeDraggable(win, handle) {
     let startX = 0, startY = 0, originLeft = 0, originTop = 0, dragging = false;
 
     function pointerDown(e) {
-      if (isMobile()) return;            /* full-screen app views aren't dragged */
-      if (e.target.closest(".window__controls")) return; /* not from buttons */
+      if (isMobile()) return;            // mobile app views aren't dragged
+      if (e.target.closest(".window__controls")) return; // not from buttons
       dragging = true;
       const pt = e.touches ? e.touches[0] : e;
       startX = pt.clientX;
@@ -272,7 +270,7 @@
       originLeft = win.offsetLeft;
       originTop = win.offsetTop;
       document.body.classList.add("is-dragging");
-      /* block iframe from swallowing the mouse mid-drag */
+      // stop the iframe swallowing the mouse mid-drag
       win.classList.add("window--dragging");
       window.addEventListener("mousemove", pointerMove);
       window.addEventListener("mouseup", pointerUp);
@@ -305,19 +303,17 @@
     handle.addEventListener("touchstart", pointerDown, { passive: true });
   }
 
-  /* ======================================================================= */
-  /*  SYSTEM: storage, sound, face, themes                                   */
-  /* ======================================================================= */
+  // storage, sound, face, themes
   const SYSTEM = window.SYSTEM || {};
   const THEMES = SYSTEM.themes || [];
 
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
 
-  /* persistence that silently no-ops where storage is blocked (sandboxes) */
+  // storage that no-ops where it's blocked (sandboxes)
   function storeGet(k) { try { return localStorage.getItem("pos." + k); } catch (e) { return null; } }
   function storeSet(k, v) { try { localStorage.setItem("pos." + k, v); } catch (e) {} }
 
-  /* ---- retro sound via Web Audio (no asset files needed) ---- */
+  // retro sound via web audio, no asset files
   let audioCtx = null;
   let muted = storeGet("muted") === "1";
   function ac() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return audioCtx; }
@@ -351,7 +347,7 @@
   const sfxDown = () => sweep(680, 70, 0.6, "sawtooth", 0.05);
   const sfxBoot = () => [392, 523, 659, 784].forEach((f, i) => tone(f, 0.12, "square", 0.04, i * 0.12));
 
-  /* ---- expressive start-button face ---- */
+  // start-button face
   let menuOpen = false, faceHover = false;
   function restFace() { return menuOpen ? "grin" : (faceHover ? "wink" : ""); }
   function applyFace() { const f = restFace(); if (f) startButton.dataset.face = f; else delete startButton.dataset.face; }
@@ -363,7 +359,7 @@
     setInterval(() => { if (restFace() === "") flashFace("blink", 150); }, 3800);
   }
 
-  /* ---- desktop colour themes ---- */
+  // colour themes
   let currentTheme = (THEMES[0] && THEMES[0].id) || null;
   function applyTheme(id) {
     const t = THEMES.find((x) => x.id === id) || THEMES[0];
@@ -377,9 +373,7 @@
       c.classList.toggle("theme-chip--on", c.dataset.theme === currentTheme));
   }
 
-  /* ======================================================================= */
-  /*  START MENU                                                             */
-  /* ======================================================================= */
+  // start menu
   function categoryOf(app) {
     if (app.category) return app.category;
     if (app.type === "link") return "Links";
@@ -400,7 +394,7 @@
     startMenu.innerHTML = "";
     const u = SYSTEM.user || {};
 
-    /* identity banner */
+    // identity banner
     const banner = el("div", "start-menu__banner");
     const ava = el("div", "start-menu__avatar");
     if (u.avatar) {
@@ -416,7 +410,7 @@
     banner.append(ava, who);
     startMenu.appendChild(banner);
 
-    /* search */
+    // search
     const search = el("div", "start-menu__search");
     const input = document.createElement("input");
     input.type = "text"; input.className = "start-menu__search-input";
@@ -424,7 +418,7 @@
     search.appendChild(input);
     startMenu.appendChild(search);
 
-    /* scrollable, grouped app list */
+    // grouped app list
     const scroll = el("div", "start-menu__scroll");
     startMenu.appendChild(scroll);
 
@@ -447,7 +441,7 @@
       scroll.appendChild(g);
     });
 
-    /* pinned links */
+    // pinned links
     const links = SYSTEM.links || [];
     if (links.length) {
       const g = el("div", "start-menu__group");
@@ -464,7 +458,7 @@
       scroll.appendChild(g);
     }
 
-    /* system row: appearance / run / restart / shut down */
+    // appearance / run / restart / shut down
     const sys = el("div", "start-menu__system");
 
     const appearance = el("button", "start-menu__sys-item", "\uD83C\uDFA8 Appearance");
@@ -536,9 +530,7 @@
     if (e.key === "Escape") setStartOpen(false);
   });
 
-  /* ======================================================================= */
-  /*  RUN… DIALOG                                                            */
-  /* ======================================================================= */
+  // run dialog
   let runOverlay = null;
   function openRun() {
     if (!runOverlay) runOverlay = buildRun();
@@ -593,9 +585,7 @@
     out.textContent = "Unknown command: " + cmd + "   (try \u201Chelp\u201D)";
   }
 
-  /* ======================================================================= */
-  /*  BOOT SPLASH + POWER OFF / ON                                           */
-  /* ======================================================================= */
+  // boot splash + power off/on
   let bootOverlay = null, powerOverlay = null;
   function ensureBoot() {
     if (!bootOverlay) {
@@ -615,7 +605,7 @@
     b.classList.add("boot--show");
     const fill = b.querySelector(".boot__fill");
     fill.style.transition = "none"; fill.style.width = "0%";
-    void b.offsetWidth;                       /* reflow so the bar animates from 0 */
+    void b.offsetWidth;                       // reflow so the bar animates from 0
     fill.style.transition = "width 1.3s steps(22)";
     fill.style.width = "100%";
     sfxBoot();
@@ -641,7 +631,7 @@
   }
   function powerOff(opts) {
     const restart = !!(opts && opts.restart);
-    Array.from(open.keys()).forEach(closeWindow);   /* clean slate */
+    Array.from(open.keys()).forEach(closeWindow);   // close everything first
     setStartOpen(false); closeRun();
     sfxDown();
     const p = ensurePower();
@@ -656,9 +646,7 @@
     }, 720);
   }
 
-  /* ======================================================================= */
-  /*  CLOCK                                                                  */
-  /* ======================================================================= */
+  // clock
   function tickClock() {
     const now = new Date();
     let h = now.getHours();
@@ -668,12 +656,9 @@
     clockEl.textContent = h + ":" + m + " " + ampm;
   }
 
-  /* ======================================================================= */
-  /*  BOOT                                                                   */
-  /* ======================================================================= */
+  // startup
   const speaker = document.querySelector(".tray__speaker");
-  function renderMute() { if (speaker) speaker.textContent = muted ? "\uD83D\uDD07" : "\uD83D\uDD08"; }
-  if (speaker) {
+  function renderMute() { if (speaker) speaker.textContent = muted ? "\uD83D\uDD07" : "\uD83D\uDD08"; }  if (speaker) {
     speaker.style.cursor = "pointer";
     speaker.title = "Mute / unmute";
     speaker.addEventListener("click", () => {
@@ -688,10 +673,10 @@
   initFace();
   applyShellMode();
   if (mobileMQ.addEventListener) mobileMQ.addEventListener("change", applyShellMode);
-  else if (mobileMQ.addListener) mobileMQ.addListener(applyShellMode); /* older Safari */
+  else if (mobileMQ.addListener) mobileMQ.addListener(applyShellMode); // old safari
   layoutTabs();
   tickClock();
   setInterval(tickClock, 1000);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRun(); });
-  runBoot();   /* first-load power-on splash */
+  runBoot();   // power-on splash on first load
 })();

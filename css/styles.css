@@ -1,8 +1,6 @@
-/* ============================================================================
- *  styles.css  —  THE LOOK
- *  Palette is pulled from the reference: teal desktop, cream window faces,
- *  cartridge purple, star magenta + yellow. Chunky Win9x-style bevels.
- * ========================================================================== */
+/* styles.css
+   teal desktop, cream window faces, cartridge purple, magenta + yellow
+   accents. chunky win9x-style bevels. */
 
 :root {
   /* surfaces */
@@ -46,7 +44,7 @@ body.is-dragging { cursor: grabbing; }
 img { display: block; }
 button { font-family: inherit; }
 
-/* subtle CRT scanline signature — restrained, decorative only */
+/* crt scanlines, decorative */
 body::after {
   content: "";
   position: fixed;
@@ -103,9 +101,7 @@ body::after {
 }
 .os-btn:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
 
-/* ============================================================================
- *  DESKTOP + ICONS
- * ========================================================================== */
+/* desktop + icons */
 .desktop {
   position: absolute;
   inset: 0 0 var(--bar-h) 0;
@@ -143,7 +139,7 @@ body::after {
   image-rendering: pixelated;
   filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.35));
 }
-/* fallback shown when the icon PNG is missing */
+/* shown when the icon png is missing */
 .app-icon-fallback {
   width: 72px;
   height: 72px;
@@ -169,11 +165,9 @@ body::after {
     2px -2px var(--ink), -2px 2px var(--ink);
 }
 
-/* ============================================================================
- *  WINDOWS
- * ========================================================================== */
-/* The layer spans the whole desktop, so let clicks pass through to the icons
- * beneath it; only the windows themselves should capture pointer events. */
+/* windows */
+/* layer covers the desktop, so let clicks pass through to the icons under
+ * it; only the windows capture pointer events */
 .window-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 
 .window {
@@ -185,7 +179,7 @@ body::after {
   min-height: 180px;
   max-width: calc(100vw - 16px);
   max-height: calc(100vh - var(--bar-h) - 16px);
-  max-height: calc(100dvh - var(--bar-h) - 16px); /* dvh: survives mobile URL bar */
+  max-height: calc(100dvh - var(--bar-h) - 16px); /* dvh, not vh, for the mobile url bar */
   background: var(--panel);
   border: 3px solid var(--bevel-lo2);
   box-shadow:
@@ -250,18 +244,20 @@ body::after {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
   padding: 18px;
   background: var(--panel);
   border-top: 2px solid var(--bevel-lo2);
 }
 
-/* game / iframe windows render edge-to-edge with no chrome padding */
+/* game/iframe windows render edge-to-edge */
 .window__body--flush { padding: 0; overflow: hidden; background: #000; }
 .game-frame { width: 100%; height: 100%; background: #000; }
 .game-frame__iframe { width: 100%; height: 100%; border: 0; display: block; }
 .placeholder--game { width: 100%; height: 100%; min-height: 0; border-width: 0; }
-/* While ANY window is being dragged, stop every game iframe from capturing the
- * mouse — otherwise the drag "sticks" the moment the cursor crosses a game. */
+/* while a window is being dragged, stop game iframes capturing the mouse,
+ * otherwise the drag sticks when the cursor crosses a game */
 .window--dragging .game-frame,
 body.is-dragging .game-frame { pointer-events: none; }
 
@@ -317,11 +313,9 @@ body.is-dragging .game-frame { pointer-events: none; }
 .empty-state__title { font-family: var(--font-display); font-size: 12px; }
 .empty-state__hint { font-size: 18px; }
 
-/* ============================================================================
- *  GAMES — carousel
- * ========================================================================== */
+/* games carousel */
 .carousel { display: flex; flex-direction: column; gap: 14px; height: 100%; }
-.carousel__stage { flex: 1; min-height: 0; }
+.carousel__stage { flex: 1; min-height: 0; overflow-y: auto; }
 .game-card { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; }
 .game-card__media { display: flex; flex-direction: column; gap: 10px; }
 .game-card__video { width: 100%; }
@@ -344,13 +338,12 @@ body.is-dragging .game-frame { pointer-events: none; }
   align-items: center;
   justify-content: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 .carousel__arrow { padding: 8px 16px; }
 .carousel__counter { font-family: var(--font-display); font-size: 11px; min-width: 70px; text-align: center; }
 
-/* ============================================================================
- *  ART — gallery
- * ========================================================================== */
+/* art gallery */
 .gallery { display: flex; flex-direction: column; gap: 16px; }
 .gallery__header {
   display: flex;
@@ -387,9 +380,7 @@ body.is-dragging .game-frame { pointer-events: none; }
 }
 .art-card__link:hover { color: var(--accent); text-decoration: underline; }
 
-/* ============================================================================
- *  ABOUT ME — document
- * ========================================================================== */
+/* about me document */
 .doc { display: flex; flex-direction: column; gap: 10px; max-width: 60ch; }
 .doc__name { font-family: var(--font-display); font-size: 18px; color: var(--purple); margin: 0; }
 .doc__role { font-size: 20px; color: var(--ink-soft); margin: 0; }
@@ -401,9 +392,7 @@ body.is-dragging .game-frame { pointer-events: none; }
 .doc__resume { align-self: flex-start; margin-top: 14px; }
 .doc__resume--off { cursor: default; opacity: 0.55; }
 
-/* ============================================================================
- *  TASKBAR
- * ========================================================================== */
+/* taskbar */
 .taskbar {
   position: fixed;
   left: 0;
@@ -460,16 +449,16 @@ body.is-dragging .game-frame { pointer-events: none; }
 }
 .start-button__text { line-height: 1; }
 
-/* expressive face: JS sets data-face on the button; default content is ":)" */
+/* face: js sets data-face on the button, default is :) */
 .start-button[data-face="wink"]  .start-button__screen::before { content: ";)"; }
 .start-button[data-face="grin"]  .start-button__screen::before { content: ":D"; }
 .start-button[data-face="oh"]    .start-button__screen::before { content: ":O"; }
 .start-button[data-face="blink"] .start-button__screen::before { content: "--"; letter-spacing: -1px; }
 
-/* smooth fade when the theme palette changes */
+/* fade when the theme changes */
 body { transition: background-color 0.35s ease; }
 
-/* process tabs — flex:1 makes them share the bar evenly, capped per tab */
+/* process tabs: flex:1 shares the bar evenly, capped per tab */
 .process-bar {
   flex: 1;
   display: flex;
@@ -519,9 +508,7 @@ body { transition: background-color 0.35s ease; }
 .tray__speaker { font-size: 18px; line-height: 1; }
 .tray__clock { font-family: var(--font-display); font-size: 12px; white-space: nowrap; }
 
-/* ============================================================================
- *  START MENU
- * ========================================================================== */
+/* start menu */
 .start-menu {
   position: fixed;
   left: 10px;
@@ -563,11 +550,25 @@ body { transition: background-color 0.35s ease; }
 .start-menu__item:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
 .start-menu__icon { width: 24px; height: 24px; image-rendering: pixelated; }
 
-/* ---- upgraded start-menu pieces ---- */
+/* start-menu pieces */
 .start-menu__banner {
   display: flex; align-items: center; gap: 10px; padding: 12px;
-  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
   color: #fff;
+  /* dithered gradient bar: a posterized purple ramp plus a 2px checkerboard of
+     the lighter purple, so it reads as an ordered-dither blend instead of a
+     smooth gradient. only the two theme purples are used (color-mix derives the
+     in-between steps), so the bar tracks the active theme. */
+  background-color: var(--purple);
+  background-image:
+    repeating-conic-gradient(var(--purple-hi) 0 25%, transparent 0 50%),
+    linear-gradient(180deg,
+      var(--purple-hi) 0 16.66%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 33%) 16.66% 33.33%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 50%) 33.33% 50%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 67%) 50% 66.66%,
+      color-mix(in srgb, var(--purple-hi), var(--purple) 83%) 66.66% 83.33%,
+      var(--purple) 83.33% 100%);
+  background-size: 2px 2px, 100% 100%;
 }
 .start-menu__avatar {
   width: 40px; height: 40px; flex-shrink: 0; overflow: hidden;
@@ -636,9 +637,7 @@ body { transition: background-color 0.35s ease; }
 .theme-chip--on { outline: 2px solid var(--accent); }
 .theme-chip__sw { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid var(--bevel-lo2); }
 
-/* ============================================================================
- *  SYSTEM OVERLAYS — boot splash, CRT power off/on, run dialog
- * ========================================================================== */
+/* system overlays: boot, power off/on, run dialog */
 .boot {
   position: fixed; inset: 0; z-index: 9500; background: #0b0b14;
   display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
@@ -689,18 +688,13 @@ body { transition: background-color 0.35s ease; }
 }
 .run__out { margin: 10px 0 0; min-height: 22px; white-space: pre-wrap; word-break: break-word; font-family: var(--font-body); font-size: 18px; color: var(--purple); }
 
-/* ============================================================================
- *  RESPONSIVE
- * ========================================================================== */
-/* ============================================================================
- *  MOBILE / TOUCH SHELL
- *  Toggled by JS via body.mobile-mode (see os.js). Everything above is the
- *  untouched desktop experience; these rules only reshape phones / small touch
- *  screens into a home-grid + full-screen-app + switcher layout.
- * ========================================================================== */
+/* mobile / touch shell
+   toggled by js via body.mobile-mode (see os.js). everything above is the
+   desktop layout; these rules only kick in on phones / small touch screens:
+   home-grid + full-screen apps + app switcher. */
 body.mobile-mode { --bar-h: 60px; }
 
-/* Desktop icons become a centered home-screen grid */
+/* icons become a centered home grid */
 body.mobile-mode .icon-layer {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
@@ -710,7 +704,7 @@ body.mobile-mode .icon-layer {
 }
 body.mobile-mode .desktop-icon { width: 100%; }
 
-/* Windows become full-screen app views — no dragging, no chrome shadow */
+/* windows go full-screen, no dragging or shadow */
 body.mobile-mode .window {
   left: 0 !important;
   top: 0 !important;
@@ -727,12 +721,12 @@ body.mobile-mode .window {
 body.mobile-mode .window__bar { cursor: default; padding: 10px 8px; }
 body.mobile-mode .window__title { font-size: 12px; }
 
-/* Thumb-friendly window controls (~44px tall target) */
+/* bigger touch targets (~44px) */
 body.mobile-mode .window__btn { width: 44px; height: 38px; font-size: 13px; }
 
 body.mobile-mode .game-card { grid-template-columns: 1fr; }
 
-/* Taskbar becomes a scrollable app switcher */
+/* taskbar becomes a scrollable app switcher */
 body.mobile-mode .start-button { padding: 0 12px; }
 body.mobile-mode .start-button__text { display: none; }
 body.mobile-mode .tray__speaker { display: none; }
@@ -747,7 +741,7 @@ body.mobile-mode .process-tab__label,
 body.mobile-mode .process-tab__hint { display: none; }
 body.mobile-mode .process-tab__icon { width: 26px; height: 26px; }
 
-/* Start menu opens as a full-width bottom sheet */
+/* start menu opens as a bottom sheet */
 body.mobile-mode .start-menu {
   left: 6px;
   right: 6px;
@@ -756,9 +750,7 @@ body.mobile-mode .start-menu {
 }
 body.mobile-mode .start-menu__item { padding: 14px 10px; font-size: 12px; }
 
-/* ============================================================================
- *  ACCESSIBILITY
- * ========================================================================== */
+/* accessibility */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; }
 }
