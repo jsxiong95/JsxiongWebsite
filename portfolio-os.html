@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Portfolio OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+/* ============================================================================
+ *  styles.css  —  THE LOOK
+ *  Palette is pulled from the reference: teal desktop, cream window faces,
+ *  cartridge purple, star magenta + yellow. Chunky Win9x-style bevels.
+ * ========================================================================== */
+
+:root {
+  /* surfaces */
+  --desktop:   #3fb6c6;
+  --panel:     #ece7d6;
+  --panel-2:   #dbd4be;
+  --ink:       #2a2438;
+  --ink-soft:  #5a5468;
+
+  /* bevels */
+  --bevel-hi:  #ffffff;
+  --bevel-lo:  #9b93ad;
+  --bevel-lo2: #46405a;
+
+  /* accents (from the icons) */
+  --accent:    #ff4d8d;   /* star / heart pink   */
+  --accent-2:  #ffd23f;   /* star yellow         */
+  --purple:    #5b3fa0;   /* cartridge body      */
+  --purple-hi: #8a63d6;   /* cartridge highlight */
+  --blue:      #3c7bd4;   /* cube face           */
+
+  --bar-h: 56px;          /* taskbar height */
+
+  --font-display: "Press Start 2P", monospace;
+  --font-body: "VT323", monospace;
+}
+
+/* ---- reset --------------------------------------------------------------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--desktop);
+  overflow: hidden;
+  -webkit-font-smoothing: none;
+  user-select: none;
+}
+body.is-dragging { cursor: grabbing; }
+img { display: block; }
+button { font-family: inherit; }
+
+/* subtle CRT scanline signature — restrained, decorative only */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.05) 0,
+    rgba(0, 0, 0, 0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+  z-index: 9999;
+}
+
+/* ---- reusable bevels ----------------------------------------------------- */
+.bevel-out {
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+}
+.bevel-in {
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset -2px -2px 0 var(--bevel-hi), inset 2px 2px 0 var(--bevel-lo);
+}
+
+/* ---- generic OS button --------------------------------------------------- */
+.os-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+  font-family: var(--font-display);
+  font-size: 10px;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+}
+.os-btn:active:not(:disabled) {
+  box-shadow: inset -2px -2px 0 var(--bevel-hi), inset 2px 2px 0 var(--bevel-lo);
+  transform: translateY(1px);
+}
+.os-btn:disabled { opacity: 0.45; cursor: default; }
+.os-btn--accent {
+  background: var(--accent);
+  color: #fff;
+  border-color: #8c1f4d;
+}
+.os-btn:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+
+/* ============================================================================
+ *  DESKTOP + ICONS
+ * ========================================================================== */
+.desktop {
+  position: absolute;
+  inset: 0 0 var(--bar-h) 0;
+  overflow: hidden;
+}
+.icon-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 24px 0 0 24px;
+  z-index: 1;
+}
+.desktop-icon {
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  background: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.desktop-icon:hover { border-style: dotted; border-color: rgba(255,255,255,0.7); }
+.desktop-icon:active { transform: translateY(1px); }
+.desktop-icon:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+
+.app-icon-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.35));
+}
+/* fallback shown when the icon PNG is missing */
+.app-icon-fallback {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--purple);
+  color: var(--accent-2);
+  border: 3px solid var(--bevel-lo2);
+  box-shadow: inset 3px 3px 0 var(--purple-hi);
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+.desktop-icon__label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: #fff;
+  text-align: center;
+  text-shadow:
+    -2px 0 var(--ink), 2px 0 var(--ink),
+    0 -2px var(--ink), 0 2px var(--ink),
+    -2px -2px var(--ink), 2px 2px var(--ink),
+    2px -2px var(--ink), -2px 2px var(--ink);
+}
+
+/* ============================================================================
+ *  WINDOWS
+ * ========================================================================== */
+/* The layer spans the whole desktop, so let clicks pass through to the icons
+ * beneath it; only the windows themselves should capture pointer events. */
+.window-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+
+.window {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  min-height: 180px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - var(--bar-h) - 16px);
+  max-height: calc(100dvh - var(--bar-h) - 16px); /* dvh: survives mobile URL bar */
+  background: var(--panel);
+  border: 3px solid var(--bevel-lo2);
+  box-shadow:
+    inset 2px 2px 0 var(--bevel-hi),
+    inset -2px -2px 0 var(--bevel-lo),
+    6px 6px 0 rgba(0, 0, 0, 0.25);
+  animation: window-pop 0.12s steps(3) both;
+}
+@keyframes window-pop { from { transform: scale(0.9); opacity: 0; } }
+.window--minimized { display: none; }
+
+.window__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 6px 6px 8px;
+  background: linear-gradient(180deg, var(--ink-soft), #423c54);
+  color: #cfc8dd;
+  cursor: grab;
+}
+.window--active .window__bar {
+  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
+  color: #fff;
+}
+.window__bar:active { cursor: grabbing; }
+.window__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.window__title-icon { width: 20px; height: 20px; image-rendering: pixelated; }
+
+.window__controls { display: flex; gap: 4px; flex-shrink: 0; }
+.window__btn {
+  width: 26px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  color: var(--ink);
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+  font-family: var(--font-display);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+.window__btn:active {
+  box-shadow: inset -2px -2px 0 var(--bevel-hi), inset 2px 2px 0 var(--bevel-lo);
+}
+.window__btn--close { background: var(--accent); color: #fff; border-color: #8c1f4d; }
+.window__btn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 1px; }
+
+.window__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+  background: var(--panel);
+  border-top: 2px solid var(--bevel-lo2);
+}
+
+/* game / iframe windows render edge-to-edge with no chrome padding */
+.window__body--flush { padding: 0; overflow: hidden; background: #000; }
+.game-frame { width: 100%; height: 100%; background: #000; }
+.game-frame__iframe { width: 100%; height: 100%; border: 0; display: block; }
+.placeholder--game { width: 100%; height: 100%; min-height: 0; border-width: 0; }
+/* While ANY window is being dragged, stop every game iframe from capturing the
+ * mouse — otherwise the drag "sticks" the moment the cursor crosses a game. */
+.window--dragging .game-frame,
+body.is-dragging .game-frame { pointer-events: none; }
+
+/* ---- shared content bits ------------------------------------------------- */
+.field-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--purple);
+  margin: 14px 0 6px;
+  letter-spacing: 1px;
+}
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  margin: 0 6px 6px 0;
+  font-size: 16px;
+  background: var(--blue);
+  color: #fff;
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4);
+}
+.placeholder {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
+  background:
+    repeating-linear-gradient(45deg, #cfc8b6 0 10px, #c3bca8 10px 20px);
+  border: 2px dashed var(--ink-soft);
+  color: var(--ink-soft);
+}
+.placeholder__label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  text-transform: uppercase;
+  background: var(--panel);
+  padding: 4px 8px;
+  border: 2px solid var(--ink-soft);
+}
+.placeholder--video { min-height: 200px; aspect-ratio: 16 / 9; }
+.placeholder__play {
+  position: absolute;
+  font-size: 34px;
+  color: var(--ink-soft);
+  opacity: 0.6;
+}
+.pix-img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.pix-video { width: 100%; border: 2px solid var(--bevel-lo2); background: #000; }
+
+.empty-state { padding: 40px 16px; text-align: center; color: var(--ink-soft); }
+.empty-state__title { font-family: var(--font-display); font-size: 12px; }
+.empty-state__hint { font-size: 18px; }
+
+/* ============================================================================
+ *  GAMES — carousel
+ * ========================================================================== */
+.carousel { display: flex; flex-direction: column; gap: 14px; height: 100%; }
+.carousel__stage { flex: 1; min-height: 0; }
+.game-card { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; }
+.game-card__media { display: flex; flex-direction: column; gap: 10px; }
+.game-card__video { width: 100%; }
+.game-card__shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.game-card__shots > * { aspect-ratio: 4 / 3; }
+.game-card__title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--purple);
+  margin: 0 0 10px;
+}
+.game-card__desc, .game-card__role { font-size: 19px; line-height: 1.35; margin: 0; }
+
+.carousel__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.carousel__arrow { padding: 8px 16px; }
+.carousel__counter { font-family: var(--font-display); font-size: 11px; min-width: 70px; text-align: center; }
+
+/* ============================================================================
+ *  ART — gallery
+ * ========================================================================== */
+.gallery { display: flex; flex-direction: column; gap: 16px; }
+.gallery__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.gallery__intro { font-family: var(--font-display); font-size: 12px; margin: 0; color: var(--purple); }
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px;
+}
+.art-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--panel-2);
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+}
+.art-card__frame { width: 100%; aspect-ratio: 1 / 1; overflow: hidden; }
+.art-card__title { font-family: var(--font-display); font-size: 11px; margin: 4px 0 0; }
+.art-card__desc { font-size: 17px; line-height: 1.3; margin: 0; }
+.art-card__tools { margin-top: 2px; }
+.art-card__link {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: 9px;
+  color: var(--blue);
+  text-decoration: none;
+}
+.art-card__link:hover { color: var(--accent); text-decoration: underline; }
+
+/* ============================================================================
+ *  ABOUT ME — document
+ * ========================================================================== */
+.doc { display: flex; flex-direction: column; gap: 10px; max-width: 60ch; }
+.doc__name { font-family: var(--font-display); font-size: 18px; color: var(--purple); margin: 0; }
+.doc__role { font-size: 20px; color: var(--ink-soft); margin: 0; }
+.doc__rule { width: 100%; border: none; border-top: 3px dashed var(--ink-soft); margin: 6px 0; }
+.doc__para { font-size: 20px; line-height: 1.4; margin: 0; }
+.doc__links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.doc__link { font-family: var(--font-display); font-size: 10px; color: var(--blue); }
+.doc__link:hover { color: var(--accent); }
+.doc__resume { align-self: flex-start; margin-top: 14px; }
+.doc__resume--off { cursor: default; opacity: 0.55; }
+
+/* ============================================================================
+ *  TASKBAR
+ * ========================================================================== */
+.taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border-top: 3px solid var(--bevel-lo2);
+  box-shadow: inset 0 2px 0 var(--bevel-hi);
+  z-index: 5000;
+}
+
+/* start button */
+.start-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px 0 8px;
+  background: var(--panel);
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+  font-family: var(--font-display);
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.start-button--active,
+.start-button:active {
+  box-shadow: inset -2px -2px 0 var(--bevel-hi), inset 2px 2px 0 var(--bevel-lo);
+}
+.start-button:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+.start-button__face {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: #d8d2e6;
+  border: 2px solid var(--bevel-lo2);
+}
+.start-button__screen {
+  width: 16px; height: 12px;
+  background: var(--blue);
+  box-shadow: inset 0 0 0 2px #1f3f6e;
+  position: relative;
+}
+.start-button__screen::before {
+  content: ":)";
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-body); font-size: 12px; color: var(--accent-2);
+}
+.start-button__text { line-height: 1; }
+
+/* expressive face: JS sets data-face on the button; default content is ":)" */
+.start-button[data-face="wink"]  .start-button__screen::before { content: ";)"; }
+.start-button[data-face="grin"]  .start-button__screen::before { content: ":D"; }
+.start-button[data-face="oh"]    .start-button__screen::before { content: ":O"; }
+.start-button[data-face="blink"] .start-button__screen::before { content: "--"; letter-spacing: -1px; }
+
+/* smooth fade when the theme palette changes */
+body { transition: background-color 0.35s ease; }
+
+/* process tabs — flex:1 makes them share the bar evenly, capped per tab */
+.process-bar {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+  height: 40px;
+}
+.process-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--panel);
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+  font-family: var(--font-display);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+}
+.process-tab--active {
+  background: var(--panel-2);
+  box-shadow: inset -2px -2px 0 var(--bevel-hi), inset 2px 2px 0 var(--bevel-lo);
+}
+.process-tab:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 1px; }
+.process-tab__icon { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
+.process-tab__label {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
+}
+.process-tab__hint { color: var(--ink-soft); flex-shrink: 0; }
+
+/* tray / clock */
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 14px;
+  border: 2px solid var(--bevel-lo2);
+  box-shadow: inset -2px -2px 0 var(--bevel-hi), inset 2px 2px 0 var(--bevel-lo);
+  flex-shrink: 0;
+}
+.tray__speaker { font-size: 18px; line-height: 1; }
+.tray__clock { font-family: var(--font-display); font-size: 12px; white-space: nowrap; }
+
+/* ============================================================================
+ *  START MENU
+ * ========================================================================== */
+.start-menu {
+  position: fixed;
+  left: 10px;
+  bottom: calc(var(--bar-h) + 6px);
+  width: 400px;
+  max-width: calc(100vw - 20px);
+  max-height: min(74vh, 560px);
+  max-height: min(74dvh, 560px);
+  background: var(--panel);
+  border: 3px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), 6px 6px 0 rgba(0,0,0,0.25);
+  display: none;
+  flex-direction: column;
+  z-index: 6000;
+}
+.start-menu--open { display: flex; animation: window-pop 0.1s steps(2) both; }
+.start-menu__header {
+  padding: 12px 12px 12px 14px;
+  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 11px;
+}
+.start-menu__list { display: flex; flex-direction: column; padding: 6px; }
+.start-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.start-menu__item:hover { background: var(--blue); color: #fff; }
+.start-menu__item:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
+.start-menu__icon { width: 24px; height: 24px; image-rendering: pixelated; }
+
+/* ---- upgraded start-menu pieces ---- */
+.start-menu__banner {
+  display: flex; align-items: center; gap: 10px; padding: 12px;
+  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
+  color: #fff;
+}
+.start-menu__avatar {
+  width: 40px; height: 40px; flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel); color: var(--purple);
+  border: 2px solid var(--bevel-lo2);
+  font-family: var(--font-display); font-size: 16px;
+}
+.start-menu__avatar img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.start-menu__who { min-width: 0; }
+.start-menu__name { font-family: var(--font-display); font-size: 11px; }
+.start-menu__status { font-size: 15px; opacity: 0.85; margin-top: 3px; }
+
+.start-menu__search { padding: 8px; border-bottom: 2px solid var(--panel-2); }
+.start-menu__search-input {
+  width: 100%; padding: 8px 10px;
+  font-family: var(--font-body); font-size: 18px; color: var(--ink);
+  background: #fff; border: 2px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-lo);
+}
+.start-menu__search-input:focus { outline: 2px solid var(--accent-2); }
+
+.start-menu__scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 4px; }
+.start-menu__group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 6px;
+  padding: 4px 4px 8px;
+}
+.start-menu__group[hidden] { display: none; }
+.start-menu__group-title { grid-column: 1 / -1; }
+.start-menu__item { min-width: 0; }
+.start-menu__item > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.start-menu__group-title {
+  font-family: var(--font-display); font-size: 8px; letter-spacing: 1px;
+  color: var(--ink-soft); padding: 6px 8px 4px; text-transform: uppercase;
+}
+.start-menu__item[hidden], .start-menu__link[hidden] { display: none; }
+
+.start-menu__links { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 6px 6px; }
+.start-menu__link {
+  font-family: var(--font-display); font-size: 9px; color: #fff; text-decoration: none;
+  padding: 7px 9px; background: var(--blue);
+  border: 2px solid var(--bevel-lo2); box-shadow: inset 1px 1px 0 rgba(255,255,255,0.35);
+}
+.start-menu__link:hover { background: var(--accent); }
+
+.start-menu__system { border-top: 2px solid var(--panel-2); padding: 4px; }
+.start-menu__sys-item {
+  display: block; width: 100%; text-align: left; padding: 10px 8px;
+  background: transparent; border: none; cursor: pointer;
+  font-family: var(--font-display); font-size: 10px; color: var(--ink);
+}
+.start-menu__sys-item:hover { background: var(--blue); color: #fff; }
+.start-menu__sys-item--danger:hover { background: var(--accent); }
+
+.start-menu__themes { display: none; padding: 4px 6px 8px; }
+.start-menu__themes--open { display: block; }
+.theme-chip {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 7px 8px; margin-top: 4px; cursor: pointer; text-align: left;
+  font-family: var(--font-display); font-size: 9px; color: var(--ink);
+  background: var(--panel-2); border: 2px solid var(--bevel-lo2);
+}
+.theme-chip:hover { background: #fff; }
+.theme-chip--on { outline: 2px solid var(--accent); }
+.theme-chip__sw { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid var(--bevel-lo2); }
+
+/* ============================================================================
+ *  SYSTEM OVERLAYS — boot splash, CRT power off/on, run dialog
+ * ========================================================================== */
+.boot {
+  position: fixed; inset: 0; z-index: 9500; background: #0b0b14;
+  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+}
+.boot--show { display: flex; }
+.boot--hide { animation: boot-fade 0.4s ease forwards; }
+@keyframes boot-fade { to { opacity: 0; visibility: hidden; } }
+.boot__logo {
+  font-family: var(--font-display); font-size: 26px; color: var(--accent-2);
+  text-shadow: 3px 3px 0 var(--purple); letter-spacing: 2px; text-align: center; padding: 0 12px;
+}
+.boot__sub { font-family: var(--font-display); font-size: 10px; color: #8a82a0; text-align: center; }
+.boot__bar { width: 260px; max-width: 70vw; height: 20px; padding: 2px; background: #16131f; border: 2px solid #3a3550; }
+.boot__fill { height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--accent) 0 8px, var(--accent-2) 8px 12px); }
+
+.power { position: fixed; inset: 0; z-index: 9000; background: #000; display: none; align-items: center; justify-content: center; }
+.power--show { display: flex; }
+.power__tube { position: absolute; inset: 0; transform-origin: center; background: var(--desktop); transform: scale(0); opacity: 0; }
+.power--collapsing .power__tube { transform: scale(1); opacity: 1; animation: crt-off 0.72s ease forwards; }
+@keyframes crt-off {
+  0%   { transform: scale(1, 1);        opacity: 1; filter: brightness(1); }
+  55%  { transform: scale(1, 0.014);    opacity: 1; filter: brightness(3); }
+  78%  { transform: scale(0.02, 0.014); opacity: 1; filter: brightness(7); }
+  100% { transform: scale(0, 0);        opacity: 0; }
+}
+.power__hint { position: relative; opacity: 0; font-family: var(--font-display); font-size: 12px; color: #cfc8dd; }
+.power--ready .power__hint { opacity: 1; animation: soft-blink 1.2s steps(2) infinite; }
+@keyframes soft-blink { 50% { opacity: 0.25; } }
+
+.run { position: fixed; inset: 0; z-index: 8000; display: none; align-items: center; justify-content: center; background: rgba(20,16,30,0.45); }
+.run--open { display: flex; }
+.run__box {
+  width: 440px; max-width: calc(100vw - 24px);
+  background: var(--panel); border: 3px solid var(--bevel-lo2);
+  box-shadow: inset 2px 2px 0 var(--bevel-hi), 6px 6px 0 rgba(0,0,0,0.3);
+}
+.run__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 6px 6px 10px; color: #fff;
+  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
+  font-family: var(--font-display); font-size: 11px;
+}
+.run__body { padding: 14px; }
+.run__hint { font-size: 16px; color: var(--ink-soft); margin: 0 0 10px; }
+.run__input {
+  width: 100%; padding: 10px; font-family: var(--font-body); font-size: 20px; color: var(--ink);
+  background: #fff; border: 2px solid var(--bevel-lo2); box-shadow: inset 2px 2px 0 var(--bevel-lo);
+}
+.run__out { margin: 10px 0 0; min-height: 22px; white-space: pre-wrap; word-break: break-word; font-family: var(--font-body); font-size: 18px; color: var(--purple); }
+
+/* ============================================================================
+ *  RESPONSIVE
+ * ========================================================================== */
+/* ============================================================================
+ *  MOBILE / TOUCH SHELL
+ *  Toggled by JS via body.mobile-mode (see os.js). Everything above is the
+ *  untouched desktop experience; these rules only reshape phones / small touch
+ *  screens into a home-grid + full-screen-app + switcher layout.
+ * ========================================================================== */
+body.mobile-mode { --bar-h: 60px; }
+
+/* Desktop icons become a centered home-screen grid */
+body.mobile-mode .icon-layer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  align-content: start;
+  gap: 22px 6px;
+  padding: 22px 14px 0;
+}
+body.mobile-mode .desktop-icon { width: 100%; }
+
+/* Windows become full-screen app views — no dragging, no chrome shadow */
+body.mobile-mode .window {
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  max-width: none;
+  height: calc(100vh - var(--bar-h)) !important;
+  height: calc(100dvh - var(--bar-h)) !important;
+  max-height: none;
+  border-width: 0;
+  box-shadow: none;
+  animation: app-slide 0.16s ease both;
+}
+@keyframes app-slide { from { transform: translateY(14px); opacity: 0; } }
+body.mobile-mode .window__bar { cursor: default; padding: 10px 8px; }
+body.mobile-mode .window__title { font-size: 12px; }
+
+/* Thumb-friendly window controls (~44px tall target) */
+body.mobile-mode .window__btn { width: 44px; height: 38px; font-size: 13px; }
+
+body.mobile-mode .game-card { grid-template-columns: 1fr; }
+
+/* Taskbar becomes a scrollable app switcher */
+body.mobile-mode .start-button { padding: 0 12px; }
+body.mobile-mode .start-button__text { display: none; }
+body.mobile-mode .tray__speaker { display: none; }
+body.mobile-mode .process-bar { gap: 8px; overflow-x: auto; overflow-y: hidden; }
+body.mobile-mode .process-tab {
+  flex: 0 0 auto;
+  width: 52px;
+  justify-content: center;
+  padding: 0;
+}
+body.mobile-mode .process-tab__label,
+body.mobile-mode .process-tab__hint { display: none; }
+body.mobile-mode .process-tab__icon { width: 26px; height: 26px; }
+
+/* Start menu opens as a full-width bottom sheet */
+body.mobile-mode .start-menu {
+  left: 6px;
+  right: 6px;
+  width: auto;
+  bottom: calc(var(--bar-h) + 6px);
+}
+body.mobile-mode .start-menu__item { padding: 14px 10px; font-size: 12px; }
+
+/* ============================================================================
+ *  ACCESSIBILITY
+ * ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; }
+}
+
+  </style>
+</head>
+<body>
+  <main id="desktop" class="desktop" aria-label="Desktop">
+    <div id="icon-layer" class="icon-layer"></div>
+    <div id="window-layer" class="window-layer"></div>
+  </main>
+  <nav id="start-menu" class="start-menu" aria-label="Start menu"></nav>
+  <footer class="taskbar" aria-label="Taskbar">
+    <button id="start-button" class="start-button" type="button" aria-haspopup="true" aria-expanded="false">
+      <span class="start-button__face" aria-hidden="true"><span class="start-button__screen"></span></span>
+      <span class="start-button__text">start</span>
+    </button>
+    <div id="process-bar" class="process-bar"></div>
+    <div class="tray">
+      <span class="tray__speaker" aria-hidden="true">&#128266;</span>
+      <span id="clock" class="tray__clock">--:--</span>
+    </div>
+  </footer>
+  <script>
+/* ============================================================================
+ *  config.js  —  THE CENTRAL REGISTRY  (data only, no logic)
+ * ============================================================================
+ *  This is the ONLY file you need to touch to add, remove, or edit apps.
+ *  Add a new object to the APPS array and the desktop icon, window, start-menu
+ *  entry, and taskbar tab are all generated automatically.
+ *
+ *  Each app object:
+ *    id        unique string, no spaces            (e.g. "music")
+ *    title     label shown under the icon + tab    (e.g. "music")
+ *    icon      path to a pixel-art PNG for the icon (see assets/icons/)
+ *    width     opening window width  in px
+ *    height    opening window height in px
+ *    type      which renderer to use:
+ *                "carousel" | "gallery" | "document"   (content layouts)
+ *                "game" | "iframe"                      (embed a playable app)
+ *                "link"                                 (open a URL, no window)
+ *    data      content for that renderer (shape depends on `type`, see below)
+ *
+ *  OPTIONAL per-app fields:
+ *    multi     true  -> every launch opens a NEW window/process (e.g. games)
+ *              false -> single window; clicking the icon refocuses it (default)
+ *    flush     true  -> body has no padding (set automatically for game/iframe)
+ *
+ *  MEDIA PLACEHOLDERS
+ *    Leave any image / video path as an empty string ("") to show a labeled
+ *    placeholder box. Drop in your real file path when ready and it appears.
+ *    Image paths get an automatic fallback to a placeholder if the file is
+ *    missing, so a wrong path never shows a broken-image icon.
+ * ========================================================================== */
+
+const APPS = [
+
+  /* ----------------------------------------------------------------------
+   *  GAMES  —  carousel of projects
+   *  data.items[] = { title, description, contribution, artwork[], video }
+   *    artwork : array of image paths (drop in assets/games/)
+   *    video   : single video path  (drop in assets/games/), "" = placeholder
+   * -------------------------------------------------------------------- */
+  {
+    id: "games",
+    title: "games",
+    icon: "assets/icons/games.png",
+    width: 760,
+    height: 560,
+    type: "carousel",
+    data: {
+      items: [
+        {
+          title: "PROJECT ONE",
+          description:
+            "A short pitch for the game goes here — genre, hook, platform, " +
+            "and the feeling you wanted players to walk away with.",
+          contribution:
+            "What you specifically built: systems, levels, tools, pipelines. " +
+            "Be concrete — “designed the combat loop and authored 12 levels.”",
+          artwork: ["", ""],          // e.g. ["assets/games/p1-key.png", "assets/games/p1-screen.png"]
+          video: ""                   // e.g. "assets/games/p1-gameplay.mp4"
+        },
+        {
+          title: "PROJECT TWO",
+          description:
+            "Second project blurb. Keep it to a couple of sentences so the " +
+            "card stays scannable.",
+          contribution:
+            "Your role on this one. Mention team size and what you owned.",
+          artwork: ["", ""],
+          video: ""
+        },
+        {
+          title: "PROJECT THREE",
+          description:
+            "Third project blurb. Swap in as many or as few projects as you " +
+            "like — the carousel sizes itself to the list.",
+          contribution:
+            "Your role here. Link the impact: shipped, awards, downloads.",
+          artwork: [""],
+          video: ""
+        }
+      ]
+    }
+  },
+
+  /* ----------------------------------------------------------------------
+   *  ART  —  gallery grid
+   *  data.artstationUrl : your default profile link
+   *  data.pieces[] = { title, image, description, tools[], link }
+   *    image : path (drop in assets/art/), "" = placeholder
+   *    tools : array of strings, e.g. ["Photoshop", "Aseprite"]
+   *    link  : optional per-piece link; falls back to artstationUrl
+   * -------------------------------------------------------------------- */
+  {
+    id: "art",
+    title: "art",
+    icon: "assets/icons/art.png",
+    width: 820,
+    height: 600,
+    type: "gallery",
+    data: {
+      artstationUrl: "https://www.artstation.com/your-profile-here",
+      pieces: [
+        {
+          title: "Piece One",
+          image: "",                  // e.g. "assets/art/piece1.png"
+          description: "A line about the piece — brief, medium, or the idea.",
+          tools: ["Photoshop", "Aseprite"],
+          link: ""                    // optional direct link to this piece
+        },
+        {
+          title: "Piece Two",
+          image: "",
+          description: "Another short caption.",
+          tools: ["Procreate"],
+          link: ""
+        },
+        {
+          title: "Piece Three",
+          image: "",
+          description: "Another short caption.",
+          tools: ["Blender", "Substance"],
+          link: ""
+        },
+        {
+          title: "Piece Four",
+          image: "",
+          description: "Another short caption.",
+          tools: ["Krita"],
+          link: ""
+        }
+      ]
+    }
+  },
+
+  /* ----------------------------------------------------------------------
+   *  ABOUT ME  —  document
+   *  data.name     : heading
+   *  data.role     : subheading / tagline
+   *  data.bio[]    : array of paragraphs
+   *  data.resumeUrl: path to your resume file (drop in assets/), "" disables
+   *  data.links[]  : optional { label, url } contact rows
+   * -------------------------------------------------------------------- */
+  {
+    id: "about",
+    title: "about me",
+    icon: "assets/icons/about.png",
+    width: 560,
+    height: 600,
+    type: "document",
+    data: {
+      name: "YOUR NAME",
+      role: "Game Developer · Pixel Artist",
+      bio: [
+        "Write a couple of friendly sentences about who you are and what " +
+          "you make. Keep the first line strong — it’s the hook.",
+        "A second paragraph for background: where you’ve worked, what you " +
+          "care about, and the kind of projects you want next."
+      ],
+      resumeUrl: "",                  // e.g. "assets/resume.pdf"
+      links: [
+        { label: "Email", url: "mailto:you@example.com" },
+        { label: "GitHub", url: "https://github.com/your-handle" }
+      ]
+    }
+  },
+
+  /* ----------------------------------------------------------------------
+   *  PLAYABLE GAME  —  template (duplicate this block per game)
+   *  Put your exported game in its own folder, e.g.  games/mygame/index.html
+   *  (a Construct/Phaser/Godot/PICO-8/Kaboom/plain-canvas export), then point
+   *  data.src at that index.html. Each click launches its own window/process.
+   * -------------------------------------------------------------------- */
+  {
+    id: "mygame",
+    title: "my game",
+    icon: "assets/icons/mygame.png",   // a cartridge PNG for this game
+    width: 820,
+    height: 640,
+    type: "game",
+    multi: true,                        // allow multiple play sessions at once
+    data: {
+      src: ""                           // e.g. "games/mygame/index.html"
+    }
+  }
+
+  /* ----------------------------------------------------------------------
+   *  EXTRA ICON IDEAS (uncomment / adapt):
+   *
+   *  // A desktop shortcut that opens an external link in a new tab:
+   *  ,{
+   *    id: "itch", title: "itch.io", icon: "assets/icons/itch.png",
+   *    type: "link", data: { url: "https://your-name.itch.io" }
+   *  }
+   * -------------------------------------------------------------------- */
+
+];
+
+/* ============================================================================
+ *  SYSTEM  —  start-menu identity, pinned links, themes, run-dialog jokes
+ *  Data only; the engine (os.js) renders all of this. Edit freely.
+ * ========================================================================== */
+const SYSTEM = {
+
+  /* Banner at the top of the start menu */
+  user: {
+    name: "YOUR NAME",
+    status: "online \u00B7 open to work",
+    avatar: "assets/icons/avatar.png"   // square pixel portrait; "" -> initial letter
+  },
+
+  /* Text on the boot / power-on splash */
+  boot: { title: "PORTFOLIO OS", subtitle: "v1.0  \u2014  press start" },
+
+  /* Pinned links (open in a new tab). Swap in your real URLs. */
+  links: [
+    { label: "GitHub",     url: "https://github.com/your-handle" },
+    { label: "ArtStation", url: "https://www.artstation.com/your-profile-here" },
+    { label: "itch.io",    url: "https://your-name.itch.io" },
+    { label: "Email",      url: "mailto:you@example.com" }
+  ],
+
+  /* Desktop colour themes. Each key in `vars` maps to a CSS variable; the first
+     theme is the default. Add your own — only the listed vars are swapped. */
+  themes: [
+    { id: "teal",    name: "Teal (default)", vars: { "--desktop": "#3fb6c6", "--purple": "#5b3fa0", "--purple-hi": "#8a63d6", "--accent": "#ff4d8d", "--accent-2": "#ffd23f", "--blue": "#3c7bd4" } },
+    { id: "sunset",  name: "Sunset",         vars: { "--desktop": "#e98a5b", "--purple": "#7d3a86", "--purple-hi": "#b95ca6", "--accent": "#ff5d73", "--accent-2": "#ffd23f", "--blue": "#e0556e" } },
+    { id: "matrix",  name: "Matrix",         vars: { "--desktop": "#0f3d24", "--purple": "#1f7a44", "--purple-hi": "#39d353", "--accent": "#39d353", "--accent-2": "#a6ff00", "--blue": "#1f7a44" } },
+    { id: "grape",   name: "Grape Soda",     vars: { "--desktop": "#6d5acd", "--purple": "#3b2a78", "--purple-hi": "#7d6be0", "--accent": "#ff6ad5", "--accent-2": "#ffe34d", "--blue": "#5a8af0" } },
+    { id: "gameboy", name: "Game Boy",       vars: { "--desktop": "#8bac0f", "--purple": "#306230", "--purple-hi": "#9bbc0f", "--accent": "#306230", "--accent-2": "#0f380f", "--blue": "#306230" } }
+  ],
+
+  /* Easter-egg replies for the Run… dialog. Keys are lowercased commands.
+     Anything not here that matches an app id/title launches that app instead.
+     Built-ins already handled: <app name>, "theme <name>", shutdown, restart, clear. */
+  run: {
+    help:   "commands: <app name>, theme <name>, shutdown, restart, clear, help",
+    hello:  "Hello, user. :)",
+    hi:     "Hello, user. :)",
+    whoami: "GUEST  (privileges: visitor)",
+    coffee: "brewing... \u2615  task failed successfully",
+    ls:     "games   art   about   mygame",
+    dir:    "games   art   about   mygame"
+  }
+
+};
+
+/* Make available to the renderers + engine (both load after this file). */
+window.APPS = APPS;
+window.SYSTEM = SYSTEM;
+
+  </script>
+  <script>
+/* ============================================================================
+ *  renderers.js  —  THE VIEW LAYER
+ * ============================================================================
+ *  Turns an app's `data` into the DOM that fills its window body.
+ *  One function per `type` declared in config.js. To support a brand-new
+ *  layout, add a key here and reference it as `type` in config.js.
+ * ========================================================================== */
+
+/* --- tiny helpers --------------------------------------------------------- */
+
+function esc(str) {
+  const d = document.createElement("div");
+  d.textContent = str == null ? "" : String(str);
+  return d.innerHTML;
+}
+
+function el(tag, className, html) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (html != null) node.innerHTML = html;
+  return node;
+}
+
+/* Image slot: real <img> when a path is given (with a graceful fallback to a
+ * placeholder if the file is missing), otherwise a labeled placeholder box. */
+function mediaImage(src, label) {
+  if (src && src.trim()) {
+    const img = el("img", "pix-img");
+    img.alt = label || "artwork";
+    img.src = src;
+    img.loading = "lazy";
+    img.onerror = () => img.replaceWith(placeholder(label || "image"));
+    return img;
+  }
+  return placeholder(label || "image");
+}
+
+/* Video slot: real <video controls> when a path is given, else a placeholder
+ * styled like a play button. */
+function mediaVideo(src, label) {
+  if (src && src.trim()) {
+    const v = el("video", "pix-video");
+    v.controls = true;
+    v.preload = "metadata";
+    v.src = src;
+    return v;
+  }
+  const box = placeholder(label || "gameplay video");
+  box.classList.add("placeholder--video");
+  box.prepend(el("span", "placeholder__play", "▶"));
+  return box;
+}
+
+function placeholder(label) {
+  const box = el("div", "placeholder");
+  box.appendChild(el("span", "placeholder__label", esc(label)));
+  return box;
+}
+
+/* ========================================================================== */
+/*  RENDERERS                                                                 */
+/* ========================================================================== */
+
+const RENDERERS = {
+
+  /* ---- CAROUSEL (games) ------------------------------------------------- */
+  carousel(app) {
+    const items = (app.data && app.data.items) || [];
+    const root = el("div", "carousel");
+
+    if (!items.length) {
+      root.appendChild(emptyState("No projects yet", "Add items in config.js"));
+      return root;
+    }
+
+    const stage = el("div", "carousel__stage");
+    root.appendChild(stage);
+
+    /* nav row */
+    const nav = el("div", "carousel__nav");
+    const prev = el("button", "os-btn carousel__arrow", "◀");
+    const next = el("button", "os-btn carousel__arrow", "▶");
+    const counter = el("span", "carousel__counter");
+    prev.type = next.type = "button";
+    prev.setAttribute("aria-label", "Previous project");
+    next.setAttribute("aria-label", "Next project");
+    nav.append(prev, counter, next);
+    root.appendChild(nav);
+
+    let index = 0;
+
+    function draw() {
+      const game = items[index];
+      stage.innerHTML = "";
+
+      const card = el("div", "game-card");
+
+      /* media column */
+      const media = el("div", "game-card__media");
+      const videoWrap = el("div", "game-card__video");
+      videoWrap.appendChild(mediaVideo(game.video, "gameplay video"));
+      media.appendChild(videoWrap);
+
+      const shots = el("div", "game-card__shots");
+      (game.artwork && game.artwork.length ? game.artwork : [""]).forEach((a) =>
+        shots.appendChild(mediaImage(a, "artwork"))
+      );
+      media.appendChild(shots);
+
+      /* text column */
+      const info = el("div", "game-card__info");
+      info.appendChild(el("h2", "game-card__title", esc(game.title)));
+      info.appendChild(el("p", "game-card__desc", esc(game.description)));
+      info.appendChild(el("h3", "field-label", "MY WORK"));
+      info.appendChild(el("p", "game-card__role", esc(game.contribution)));
+
+      card.append(media, info);
+      stage.appendChild(card);
+
+      counter.textContent = `${index + 1} / ${items.length}`;
+      prev.disabled = items.length < 2;
+      next.disabled = items.length < 2;
+    }
+
+    prev.addEventListener("click", () => {
+      index = (index - 1 + items.length) % items.length;
+      draw();
+    });
+    next.addEventListener("click", () => {
+      index = (index + 1) % items.length;
+      draw();
+    });
+
+    draw();
+    return root;
+  },
+
+  /* ---- GALLERY (art) ---------------------------------------------------- */
+  gallery(app) {
+    const data = app.data || {};
+    const pieces = data.pieces || [];
+    const root = el("div", "gallery");
+
+    /* header with the prominent ArtStation link */
+    const header = el("div", "gallery__header");
+    header.appendChild(el("p", "gallery__intro", "Selected work"));
+    if (data.artstationUrl) {
+      const a = el("a", "os-btn os-btn--accent", "View full ArtStation ↗");
+      a.href = data.artstationUrl;
+      a.target = "_blank";
+      a.rel = "noopener";
+      header.appendChild(a);
+    }
+    root.appendChild(header);
+
+    if (!pieces.length) {
+      root.appendChild(emptyState("No pieces yet", "Add pieces in config.js"));
+      return root;
+    }
+
+    const grid = el("div", "gallery__grid");
+    pieces.forEach((p) => {
+      const card = el("div", "art-card");
+      const frame = el("div", "art-card__frame");
+      frame.appendChild(mediaImage(p.image, "artwork"));
+      card.appendChild(frame);
+
+      card.appendChild(el("h3", "art-card__title", esc(p.title)));
+      card.appendChild(el("p", "art-card__desc", esc(p.description)));
+
+      if (p.tools && p.tools.length) {
+        const tools = el("div", "art-card__tools");
+        p.tools.forEach((t) => tools.appendChild(el("span", "tag", esc(t))));
+        card.appendChild(tools);
+      }
+
+      const link = p.link && p.link.trim() ? p.link : data.artstationUrl;
+      if (link) {
+        const a = el("a", "art-card__link", "View on ArtStation ↗");
+        a.href = link;
+        a.target = "_blank";
+        a.rel = "noopener";
+        card.appendChild(a);
+      }
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+    return root;
+  },
+
+  /* ---- DOCUMENT (about me) --------------------------------------------- */
+  document(app) {
+    const data = app.data || {};
+    const root = el("div", "doc");
+
+    root.appendChild(el("h1", "doc__name", esc(data.name)));
+    if (data.role) root.appendChild(el("p", "doc__role", esc(data.role)));
+    root.appendChild(el("hr", "doc__rule"));
+
+    (data.bio || []).forEach((para) =>
+      root.appendChild(el("p", "doc__para", esc(para)))
+    );
+
+    if (data.links && data.links.length) {
+      const list = el("div", "doc__links");
+      data.links.forEach((l) => {
+        const a = el("a", "doc__link", esc(l.label));
+        a.href = l.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        list.appendChild(a);
+      });
+      root.appendChild(list);
+    }
+
+    if (data.resumeUrl && data.resumeUrl.trim()) {
+      const dl = el("a", "os-btn os-btn--accent doc__resume", "⬇ Download résumé");
+      dl.href = data.resumeUrl;
+      dl.setAttribute("download", "");
+      root.appendChild(dl);
+    } else {
+      const disabled = el("span", "os-btn doc__resume doc__resume--off", "Résumé — add a file in config.js");
+      root.appendChild(disabled);
+    }
+
+    return root;
+  },
+
+  /* ---- GAME / IFRAME (playable HTML5 games) ----------------------------
+   * data.src : path to the game's own index.html
+   *            (e.g. "games/mygame/index.html" — relative to the site root)
+   * Runs the game inside a sandboxed iframe so its canvas, scripts, and
+   * keyboard input stay isolated from the OS shell — i.e. its own process.
+   * Leave src "" to show a "drop your game here" placeholder. */
+  game(app) {
+    const data = app.data || {};
+    const root = el("div", "game-frame");
+
+    if (!data.src || !data.src.trim()) {
+      const ph = placeholder("drop your html5 game here");
+      ph.classList.add("placeholder--game");
+      root.appendChild(ph);
+      return root;
+    }
+
+    const frame = document.createElement("iframe");
+    frame.className = "game-frame__iframe";
+    frame.src = data.src;
+    frame.title = app.title;
+    frame.setAttribute("allow", "autoplay; fullscreen; gamepad; xr-spatial-tracking");
+    frame.setAttribute("allowfullscreen", "");
+    /* Sandbox isolates the game. allow-same-origin is needed by most engine
+     * exports (asset loading, WASM); drop it if you ever embed a 3rd-party game. */
+    frame.setAttribute(
+      "sandbox",
+      "allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-fullscreen allow-forms"
+    );
+    root.appendChild(frame);
+    return root;
+  }
+};
+
+/* "iframe" is an alias for the same renderer (embed any web page/app). */
+RENDERERS.iframe = RENDERERS.game;
+
+function emptyState(title, hint) {
+  const box = el("div", "empty-state");
+  box.appendChild(el("p", "empty-state__title", esc(title)));
+  box.appendChild(el("p", "empty-state__hint", esc(hint)));
+  return box;
+}
+
+/* Resolve a renderer for an app, with a clear fallback. */
+function renderApp(app) {
+  const fn = RENDERERS[app.type];
+  if (typeof fn === "function") return fn(app);
+  return emptyState("Unknown layout", `No renderer for type "${app.type}"`);
+}
+
+window.renderApp = renderApp;
+
+  </script>
+  <script>
+/* ============================================================================
+ *  os.js  —  THE ENGINE  (window manager + taskbar + start menu + clock)
+ * ============================================================================
+ *  Generic and config-driven: it never names a specific app. Everything it
+ *  shows is derived from window.APPS (config.js) + window.renderApp (renderers).
+ *
+ *  INSTANCE MODEL
+ *    Every launch is its own "process": a unique instanceId, its own window and
+ *    its own taskbar tab. Apps are single-window by default (clicking the icon
+ *    refocuses the existing window). Set `multi: true` on an app in config.js to
+ *    let it spawn a fresh, independent instance on every launch — useful for
+ *    games you might want open more than once at a time.
+ * ========================================================================== */
+
+(function () {
+  "use strict";
+
+  const APPS = window.APPS || [];
+  const byId = Object.fromEntries(APPS.map((a) => [a.id, a]));
+
+  /* DOM anchors (created in index.html) */
+  const desktop = document.getElementById("desktop");
+  const iconLayer = document.getElementById("icon-layer");
+  const windowLayer = document.getElementById("window-layer");
+  const processBar = document.getElementById("process-bar");
+  const startButton = document.getElementById("start-button");
+  const startMenu = document.getElementById("start-menu");
+  const clockEl = document.getElementById("clock");
+
+  /* Shell mode: desktop (draggable windows) vs mobile (full-screen apps +
+     switcher). ONE source of truth, shared with the CSS via body.mobile-mode,
+     so the layout and the behaviour can never disagree. */
+  const mobileMQ = window.matchMedia(
+    "(max-width: 820px), (pointer: coarse) and (max-width: 1024px)"
+  );
+  function isMobile() { return mobileMQ.matches; }
+  function applyShellMode() {
+    document.body.classList.toggle("mobile-mode", mobileMQ.matches);
+  }
+
+  /* Live registry of open processes: instanceId -> { instanceId, app, win, tab, minimized } */
+  const open = new Map();
+  let zTop = 10;
+  let spawnCount = 0;
+  let instanceSeq = 0;
+
+  /* ---- small helpers ---------------------------------------------------- */
+  function el(tag, className, html) {
+    const n = document.createElement(tag);
+    if (className) n.className = className;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+
+  /* Icon image with a CSS placeholder fallback if the PNG is missing. */
+  function iconImg(app, extraClass) {
+    const img = el("img", "app-icon-img" + (extraClass ? " " + extraClass : ""));
+    img.alt = "";
+    img.src = app.icon || "";
+    img.onerror = () => {
+      const ph = el("span", "app-icon-fallback" + (extraClass ? " " + extraClass : ""));
+      ph.textContent = (app.title || "?").charAt(0).toUpperCase();
+      ph.title = "Drop a PNG at " + app.icon;
+      img.replaceWith(ph);
+    };
+    return img;
+  }
+
+  function firstInstanceOf(appId) {
+    for (const [iid, e] of open) if (e.app.id === appId) return iid;
+    return null;
+  }
+  function countInstancesOf(appId) {
+    let n = 0;
+    for (const e of open.values()) if (e.app.id === appId) n++;
+    return n;
+  }
+
+  /* ======================================================================= */
+  /*  DESKTOP ICONS                                                          */
+  /* ======================================================================= */
+  function buildIcons() {
+    iconLayer.innerHTML = "";
+    APPS.forEach((app) => {
+      const icon = el("button", "desktop-icon");
+      icon.type = "button";
+      icon.setAttribute("aria-label", "Open " + app.title);
+      icon.appendChild(iconImg(app));
+      icon.appendChild(el("span", "desktop-icon__label", app.title));
+      icon.addEventListener("click", () => launch(app.id));
+      iconLayer.appendChild(icon);
+    });
+  }
+
+  /* ======================================================================= */
+  /*  LAUNCHING / WINDOWS                                                    */
+  /* ======================================================================= */
+
+  /* Decide whether to focus an existing window or spawn a new process. */
+  function launch(appId) {
+    const app = byId[appId];
+    if (!app) return;
+
+    /* "link" apps just open a URL in a new tab, no window */
+    if (app.type === "link" && app.data && app.data.url) {
+      window.open(app.data.url, "_blank", "noopener");
+      return;
+    }
+
+    /* single-window apps (default): refocus the existing window if open */
+    if (!app.multi) {
+      const existing = firstInstanceOf(appId);
+      if (existing) {
+        restoreWindow(existing);
+        focusWindow(existing);
+        return;
+      }
+    }
+
+    spawnWindow(app);
+  }
+
+  function spawnWindow(app) {
+    const instanceId = app.id + "#" + ++instanceSeq;
+
+    /* ---- window shell ---- */
+    const win = el("div", "window");
+    win.dataset.instance = instanceId;
+    win.style.width = (app.width || 640) + "px";
+    win.style.height = (app.height || 480) + "px";
+
+    /* staggered spawn so stacked windows don't fully overlap */
+    const offset = (spawnCount % 6) * 28;
+    win.style.left = 120 + offset + "px";
+    win.style.top = 70 + offset + "px";
+    spawnCount++;
+
+    /* ---- title bar ---- */
+    const bar = el("div", "window__bar");
+    const titleWrap = el("div", "window__title");
+    titleWrap.appendChild(iconImg(app, "window__title-icon"));
+    /* number repeat instances of the same app: "my game (2)" */
+    const n = countInstancesOf(app.id);
+    const label = n > 0 ? app.title + " (" + (n + 1) + ")" : app.title;
+    titleWrap.appendChild(el("span", null, label));
+    bar.appendChild(titleWrap);
+
+    const controls = el("div", "window__controls");
+    const minBtn = el("button", "window__btn window__btn--min", "_");
+    const closeBtn = el("button", "window__btn window__btn--close", "\u2715");
+    minBtn.type = closeBtn.type = "button";
+    minBtn.setAttribute("aria-label", "Minimize " + app.title);
+    closeBtn.setAttribute("aria-label", "Close " + app.title);
+    controls.append(minBtn, closeBtn);
+    bar.appendChild(controls);
+
+    /* ---- body (filled by the view layer) ---- */
+    /* game/iframe apps render edge-to-edge with no padding */
+    const flush = app.type === "game" || app.type === "iframe" || app.flush;
+    const body = el("div", "window__body" + (flush ? " window__body--flush" : ""));
+    body.appendChild(window.renderApp(app));
+
+    win.append(bar, body);
+    windowLayer.appendChild(win);
+
+    /* ---- taskbar process tab ---- */
+    const tab = el("button", "process-tab");
+    tab.type = "button";
+    tab.dataset.instance = instanceId;
+    tab.appendChild(iconImg(app, "process-tab__icon"));
+    tab.appendChild(el("span", "process-tab__label", label));
+    tab.appendChild(el("span", "process-tab__hint", "_"));
+    processBar.appendChild(tab);
+
+    open.set(instanceId, { instanceId, app, win, tab, minimized: false });
+
+    /* ---- behaviour wiring ---- */
+    minBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      minimizeWindow(instanceId);
+    });
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeWindow(instanceId);
+    });
+    win.addEventListener("mousedown", () => focusWindow(instanceId));
+    tab.addEventListener("click", () => toggleFromTab(instanceId));
+    makeDraggable(win, bar);
+
+    focusWindow(instanceId);
+    layoutTabs();
+    return instanceId;
+  }
+
+  function focusWindow(iid) {
+    const entry = open.get(iid);
+    if (!entry) return;
+    zTop += 1;
+    entry.win.style.zIndex = zTop;
+    open.forEach((e, key) => {
+      const active = key === iid && !e.minimized;
+      e.win.classList.toggle("window--active", active);
+      e.tab.classList.toggle("process-tab--active", active);
+    });
+  }
+
+  function minimizeWindow(iid) {
+    const entry = open.get(iid);
+    if (!entry) return;
+    entry.minimized = true;
+    entry.win.classList.add("window--minimized");
+    entry.win.classList.remove("window--active");
+    entry.tab.classList.remove("process-tab--active");
+  }
+
+  function restoreWindow(iid) {
+    const entry = open.get(iid);
+    if (!entry) return;
+    entry.minimized = false;
+    entry.win.classList.remove("window--minimized");
+  }
+
+  /* Clicking a tab: minimize if it's the focused window, else restore + focus */
+  function toggleFromTab(iid) {
+    const entry = open.get(iid);
+    if (!entry) return;
+    const isTop = !entry.minimized && parseInt(entry.win.style.zIndex, 10) === zTop;
+    if (isTop) {
+      minimizeWindow(iid);
+    } else {
+      restoreWindow(iid);
+      focusWindow(iid);
+    }
+  }
+
+  function closeWindow(iid) {
+    const entry = open.get(iid);
+    if (!entry) return;
+    entry.win.remove();
+    entry.tab.remove();
+    open.delete(iid);
+    layoutTabs();
+    /* hand focus to the next-highest window, if any */
+    let topId = null;
+    let topZ = -1;
+    open.forEach((e, key) => {
+      const z = parseInt(e.win.style.zIndex, 10) || 0;
+      if (!e.minimized && z > topZ) {
+        topZ = z;
+        topId = key;
+      }
+    });
+    if (topId) focusWindow(topId);
+  }
+
+  /* Tabs grow to fill the bar evenly (CSS flex:1); count is exposed for tuning */
+  function layoutTabs() {
+    processBar.style.setProperty("--tab-count", open.size);
+  }
+
+  /* ---- dragging --------------------------------------------------------- */
+  function makeDraggable(win, handle) {
+    let startX = 0, startY = 0, originLeft = 0, originTop = 0, dragging = false;
+
+    function pointerDown(e) {
+      if (isMobile()) return;            /* full-screen app views aren't dragged */
+      if (e.target.closest(".window__controls")) return; /* not from buttons */
+      dragging = true;
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX;
+      startY = pt.clientY;
+      originLeft = win.offsetLeft;
+      originTop = win.offsetTop;
+      document.body.classList.add("is-dragging");
+      /* block iframe from swallowing the mouse mid-drag */
+      win.classList.add("window--dragging");
+      window.addEventListener("mousemove", pointerMove);
+      window.addEventListener("mouseup", pointerUp);
+      window.addEventListener("touchmove", pointerMove, { passive: false });
+      window.addEventListener("touchend", pointerUp);
+    }
+    function pointerMove(e) {
+      if (!dragging) return;
+      if (e.cancelable) e.preventDefault();
+      const pt = e.touches ? e.touches[0] : e;
+      let nextLeft = originLeft + (pt.clientX - startX);
+      let nextTop = originTop + (pt.clientY - startY);
+      const maxLeft = desktop.clientWidth - 48;
+      const maxTop = desktop.clientHeight - 48;
+      nextLeft = Math.min(Math.max(nextLeft, -win.offsetWidth + 96), maxLeft);
+      nextTop = Math.min(Math.max(nextTop, 0), maxTop);
+      win.style.left = nextLeft + "px";
+      win.style.top = nextTop + "px";
+    }
+    function pointerUp() {
+      dragging = false;
+      document.body.classList.remove("is-dragging");
+      win.classList.remove("window--dragging");
+      window.removeEventListener("mousemove", pointerMove);
+      window.removeEventListener("mouseup", pointerUp);
+      window.removeEventListener("touchmove", pointerMove);
+      window.removeEventListener("touchend", pointerUp);
+    }
+    handle.addEventListener("mousedown", pointerDown);
+    handle.addEventListener("touchstart", pointerDown, { passive: true });
+  }
+
+  /* ======================================================================= */
+  /*  SYSTEM: storage, sound, face, themes                                   */
+  /* ======================================================================= */
+  const SYSTEM = window.SYSTEM || {};
+  const THEMES = SYSTEM.themes || [];
+
+  function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+
+  /* persistence that silently no-ops where storage is blocked (sandboxes) */
+  function storeGet(k) { try { return localStorage.getItem("pos." + k); } catch (e) { return null; } }
+  function storeSet(k, v) { try { localStorage.setItem("pos." + k, v); } catch (e) {} }
+
+  /* ---- retro sound via Web Audio (no asset files needed) ---- */
+  let audioCtx = null;
+  let muted = storeGet("muted") === "1";
+  function ac() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return audioCtx; }
+  function tone(freq, dur, type, vol, delay) {
+    if (muted) return; const c = ac(); if (!c) return;
+    try {
+      if (c.state === "suspended") c.resume();
+      const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + (delay || 0);
+      o.type = type || "square"; o.frequency.value = freq;
+      o.connect(g); g.connect(c.destination);
+      g.gain.setValueAtTime(vol || 0.04, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  function sweep(from, to, dur, type, vol) {
+    if (muted) return; const c = ac(); if (!c) return;
+    try {
+      if (c.state === "suspended") c.resume();
+      const o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+      o.type = type || "sawtooth"; o.connect(g); g.connect(c.destination);
+      o.frequency.setValueAtTime(from, t);
+      o.frequency.exponentialRampToValueAtTime(to, t + dur);
+      g.gain.setValueAtTime(vol || 0.05, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  const sfxOpen = () => { tone(620, 0.05); tone(880, 0.06, "square", 0.035, 0.05); };
+  const sfxLaunch = () => { tone(523, 0.05); tone(784, 0.06, "square", 0.035, 0.05); };
+  const sfxDown = () => sweep(680, 70, 0.6, "sawtooth", 0.05);
+  const sfxBoot = () => [392, 523, 659, 784].forEach((f, i) => tone(f, 0.12, "square", 0.04, i * 0.12));
+
+  /* ---- expressive start-button face ---- */
+  let menuOpen = false, faceHover = false;
+  function restFace() { return menuOpen ? "grin" : (faceHover ? "wink" : ""); }
+  function applyFace() { const f = restFace(); if (f) startButton.dataset.face = f; else delete startButton.dataset.face; }
+  function flashFace(f, ms) { startButton.dataset.face = f; setTimeout(applyFace, ms || 140); }
+  function initFace() {
+    startButton.addEventListener("mouseenter", () => { faceHover = true; applyFace(); });
+    startButton.addEventListener("mouseleave", () => { faceHover = false; applyFace(); });
+    startButton.addEventListener("mousedown", () => flashFace("oh", 160));
+    setInterval(() => { if (restFace() === "") flashFace("blink", 150); }, 3800);
+  }
+
+  /* ---- desktop colour themes ---- */
+  let currentTheme = (THEMES[0] && THEMES[0].id) || null;
+  function applyTheme(id) {
+    const t = THEMES.find((x) => x.id === id) || THEMES[0];
+    if (!t) return;
+    const root = document.documentElement;
+    Object.keys(t.vars || {}).forEach((k) => root.style.setProperty(k, t.vars[k]));
+    currentTheme = t.id; storeSet("theme", t.id); markThemeSelection();
+  }
+  function markThemeSelection() {
+    document.querySelectorAll(".theme-chip").forEach((c) =>
+      c.classList.toggle("theme-chip--on", c.dataset.theme === currentTheme));
+  }
+
+  /* ======================================================================= */
+  /*  START MENU                                                             */
+  /* ======================================================================= */
+  function categoryOf(app) {
+    if (app.category) return app.category;
+    if (app.type === "link") return "Links";
+    if (app.type === "game" || app.type === "iframe") return "Games";
+    return "Apps";
+  }
+  function filterMenu(scroll, q) {
+    q = (q || "").trim().toLowerCase();
+    scroll.querySelectorAll(".start-menu__item, .start-menu__link").forEach((it) => {
+      it.hidden = !(!q || (it.dataset.search || "").includes(q));
+    });
+    scroll.querySelectorAll(".start-menu__group").forEach((g) => {
+      g.hidden = !g.querySelector(".start-menu__item:not([hidden]), .start-menu__link:not([hidden])");
+    });
+  }
+
+  function buildStartMenu() {
+    startMenu.innerHTML = "";
+    const u = SYSTEM.user || {};
+
+    /* identity banner */
+    const banner = el("div", "start-menu__banner");
+    const ava = el("div", "start-menu__avatar");
+    if (u.avatar) {
+      const im = el("img"); im.alt = ""; im.src = u.avatar;
+      im.onerror = () => { ava.textContent = (u.name || "U").charAt(0).toUpperCase(); };
+      ava.appendChild(im);
+    } else {
+      ava.textContent = (u.name || "U").charAt(0).toUpperCase();
+    }
+    const who = el("div", "start-menu__who");
+    who.appendChild(el("div", "start-menu__name", esc(u.name || "User")));
+    if (u.status) who.appendChild(el("div", "start-menu__status", esc(u.status)));
+    banner.append(ava, who);
+    startMenu.appendChild(banner);
+
+    /* search */
+    const search = el("div", "start-menu__search");
+    const input = document.createElement("input");
+    input.type = "text"; input.className = "start-menu__search-input";
+    input.placeholder = "Search\u2026"; input.setAttribute("aria-label", "Search apps");
+    search.appendChild(input);
+    startMenu.appendChild(search);
+
+    /* scrollable, grouped app list */
+    const scroll = el("div", "start-menu__scroll");
+    startMenu.appendChild(scroll);
+
+    const groups = {};
+    APPS.forEach((a) => { const c = categoryOf(a); (groups[c] = groups[c] || []).push(a); });
+    const order = ["Apps", "Games", "Links"];
+    const rank = (c) => (order.indexOf(c) < 0 ? 99 : order.indexOf(c));
+    Object.keys(groups).sort((a, b) => rank(a) - rank(b)).forEach((cat) => {
+      const g = el("div", "start-menu__group");
+      g.appendChild(el("div", "start-menu__group-title", esc(cat)));
+      groups[cat].forEach((app) => {
+        const item = el("button", "start-menu__item");
+        item.type = "button";
+        item.dataset.search = (app.title + " " + app.id).toLowerCase();
+        item.appendChild(iconImg(app, "start-menu__icon"));
+        item.appendChild(el("span", null, app.title));
+        item.addEventListener("click", () => { launch(app.id); setStartOpen(false); });
+        g.appendChild(item);
+      });
+      scroll.appendChild(g);
+    });
+
+    /* pinned links */
+    const links = SYSTEM.links || [];
+    if (links.length) {
+      const g = el("div", "start-menu__group");
+      g.appendChild(el("div", "start-menu__group-title", "Links"));
+      const row = el("div", "start-menu__links");
+      links.forEach((l) => {
+        const a = el("a", "start-menu__link", esc(l.label));
+        a.href = l.url; a.target = "_blank"; a.rel = "noopener";
+        a.dataset.search = (l.label || "").toLowerCase();
+        a.addEventListener("click", () => setStartOpen(false));
+        row.appendChild(a);
+      });
+      g.appendChild(row);
+      scroll.appendChild(g);
+    }
+
+    /* system row: appearance / run / restart / shut down */
+    const sys = el("div", "start-menu__system");
+
+    const appearance = el("button", "start-menu__sys-item", "\uD83C\uDFA8 Appearance");
+    appearance.type = "button";
+    const themeBox = el("div", "start-menu__themes");
+    THEMES.forEach((t) => {
+      const chip = el("button", "theme-chip");
+      chip.type = "button"; chip.dataset.theme = t.id;
+      const sw = el("span", "theme-chip__sw");
+      sw.style.background = (t.vars && t.vars["--desktop"]) || "#000";
+      chip.append(sw, el("span", null, esc(t.name)));
+      chip.addEventListener("click", () => { applyTheme(t.id); sfxOpen(); });
+      themeBox.appendChild(chip);
+    });
+    appearance.addEventListener("click", () => themeBox.classList.toggle("start-menu__themes--open"));
+
+    const runItem = el("button", "start-menu__sys-item", "\u25B6 Run\u2026");
+    runItem.type = "button";
+    runItem.addEventListener("click", () => { setStartOpen(false); openRun(); });
+
+    const restart = el("button", "start-menu__sys-item", "\u21BB Restart");
+    restart.type = "button";
+    restart.addEventListener("click", () => { setStartOpen(false); powerOff({ restart: true }); });
+
+    const shut = el("button", "start-menu__sys-item start-menu__sys-item--danger", "\u23FB Shut Down");
+    shut.type = "button";
+    shut.addEventListener("click", () => { setStartOpen(false); powerOff({ restart: false }); });
+
+    sys.append(appearance, themeBox, runItem, restart, shut);
+    startMenu.appendChild(sys);
+
+    input.addEventListener("input", () => filterMenu(scroll, input.value));
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const first = scroll.querySelector(".start-menu__item:not([hidden]), .start-menu__link:not([hidden])");
+        if (first) first.click();
+      }
+    });
+    startMenu._search = input;
+    markThemeSelection();
+  }
+
+  function setStartOpen(state) {
+    startMenu.classList.toggle("start-menu--open", state);
+    startButton.classList.toggle("start-button--active", state);
+    startButton.setAttribute("aria-expanded", state ? "true" : "false");
+    menuOpen = state; applyFace();
+    if (state) {
+      sfxOpen();
+      const sc = startMenu.querySelector(".start-menu__scroll");
+      const tb = startMenu.querySelector(".start-menu__themes");
+      if (tb) tb.classList.remove("start-menu__themes--open");
+      if (startMenu._search) {
+        startMenu._search.value = "";
+        if (sc) filterMenu(sc, "");
+        if (!isMobile()) setTimeout(() => startMenu._search.focus(), 30);
+      }
+    }
+  }
+
+  startButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setStartOpen(!startMenu.classList.contains("start-menu--open"));
+  });
+  document.addEventListener("click", (e) => {
+    if (!startMenu.contains(e.target) && e.target !== startButton) setStartOpen(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setStartOpen(false);
+  });
+
+  /* ======================================================================= */
+  /*  RUN… DIALOG                                                            */
+  /* ======================================================================= */
+  let runOverlay = null;
+  function openRun() {
+    if (!runOverlay) runOverlay = buildRun();
+    runOverlay.classList.add("run--open");
+    const inp = runOverlay.querySelector(".run__input");
+    const out = runOverlay.querySelector(".run__out");
+    out.textContent = ""; inp.value = ""; setTimeout(() => inp.focus(), 30);
+  }
+  function closeRun() { if (runOverlay) runOverlay.classList.remove("run--open"); }
+  function buildRun() {
+    const ov = el("div", "run");
+    const box = el("div", "run__box");
+    const bar = el("div", "run__bar");
+    bar.appendChild(el("span", "run__title", "Run"));
+    const x = el("button", "window__btn window__btn--close", "\u2715");
+    x.type = "button"; x.addEventListener("click", closeRun);
+    bar.appendChild(x);
+    const body = el("div", "run__body");
+    body.appendChild(el("p", "run__hint", "Type an app name and press Enter. Try \u201Chelp\u201D."));
+    const inp = document.createElement("input");
+    inp.className = "run__input"; inp.type = "text"; inp.placeholder = "> ";
+    inp.setAttribute("aria-label", "Run command");
+    const out = el("pre", "run__out");
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { runCommand(inp.value, out); inp.value = ""; }
+      else if (e.key === "Escape") closeRun();
+    });
+    body.append(inp, out);
+    box.append(bar, body);
+    ov.appendChild(box);
+    ov.addEventListener("click", (e) => { if (e.target === ov) closeRun(); });
+    document.body.appendChild(ov);
+    return ov;
+  }
+  function runCommand(raw, out) {
+    const cmd = (raw || "").trim(); if (!cmd) return;
+    const low = cmd.toLowerCase();
+    if (low === "clear" || low === "cls") { out.textContent = ""; return; }
+    if (low === "shutdown" || low === "poweroff") { closeRun(); powerOff({ restart: false }); return; }
+    if (low === "restart" || low === "reboot") { closeRun(); powerOff({ restart: true }); return; }
+    if (low.indexOf("theme ") === 0) {
+      const q = low.slice(6).trim();
+      const t = THEMES.find((x) => x.id === q || (x.name || "").toLowerCase() === q);
+      if (t) { applyTheme(t.id); sfxLaunch(); out.textContent = "theme \u2192 " + t.name; }
+      else out.textContent = "unknown theme: " + q + "  (" + THEMES.map((x) => x.id).join(", ") + ")";
+      return;
+    }
+    const app = APPS.find((a) => a.id.toLowerCase() === low || (a.title || "").toLowerCase() === low);
+    if (app) { launch(app.id); sfxLaunch(); out.textContent = "launching " + app.title + "\u2026"; closeRun(); return; }
+    const jokes = SYSTEM.run || {};
+    if (Object.prototype.hasOwnProperty.call(jokes, low)) { out.textContent = jokes[low]; return; }
+    out.textContent = "Unknown command: " + cmd + "   (try \u201Chelp\u201D)";
+  }
+
+  /* ======================================================================= */
+  /*  BOOT SPLASH + POWER OFF / ON                                           */
+  /* ======================================================================= */
+  let bootOverlay = null, powerOverlay = null;
+  function ensureBoot() {
+    if (!bootOverlay) {
+      bootOverlay = el("div", "boot");
+      const b = SYSTEM.boot || {};
+      bootOverlay.appendChild(el("div", "boot__logo", esc(b.title || "PORTFOLIO OS")));
+      bootOverlay.appendChild(el("div", "boot__sub", esc(b.subtitle || "")));
+      const bar = el("div", "boot__bar"); bar.appendChild(el("div", "boot__fill"));
+      bootOverlay.appendChild(bar);
+      document.body.appendChild(bootOverlay);
+    }
+    return bootOverlay;
+  }
+  function runBoot(done) {
+    const b = ensureBoot();
+    b.classList.remove("boot--hide");
+    b.classList.add("boot--show");
+    const fill = b.querySelector(".boot__fill");
+    fill.style.transition = "none"; fill.style.width = "0%";
+    void b.offsetWidth;                       /* reflow so the bar animates from 0 */
+    fill.style.transition = "width 1.3s steps(22)";
+    fill.style.width = "100%";
+    sfxBoot();
+    setTimeout(() => {
+      b.classList.add("boot--hide");
+      setTimeout(() => { b.classList.remove("boot--show", "boot--hide"); if (done) done(); }, 420);
+    }, 1500);
+  }
+  function ensurePower() {
+    if (!powerOverlay) {
+      powerOverlay = el("div", "power");
+      powerOverlay.appendChild(el("div", "power__tube"));
+      powerOverlay.appendChild(el("div", "power__hint", "click to power on"));
+      powerOverlay.addEventListener("click", () => {
+        if (powerOverlay.classList.contains("power--ready")) {
+          powerOverlay.classList.remove("power--ready");
+          runBoot(() => powerOverlay.classList.remove("power--show"));
+        }
+      });
+      document.body.appendChild(powerOverlay);
+    }
+    return powerOverlay;
+  }
+  function powerOff(opts) {
+    const restart = !!(opts && opts.restart);
+    Array.from(open.keys()).forEach(closeWindow);   /* clean slate */
+    setStartOpen(false); closeRun();
+    sfxDown();
+    const p = ensurePower();
+    p.classList.add("power--show"); p.classList.remove("power--ready");
+    const tube = p.querySelector(".power__tube");
+    tube.style.animation = "none"; void tube.offsetWidth; tube.style.animation = "";
+    p.classList.add("power--collapsing");
+    setTimeout(() => {
+      p.classList.remove("power--collapsing");
+      if (restart) runBoot(() => p.classList.remove("power--show"));
+      else p.classList.add("power--ready");
+    }, 720);
+  }
+
+  /* ======================================================================= */
+  /*  CLOCK                                                                  */
+  /* ======================================================================= */
+  function tickClock() {
+    const now = new Date();
+    let h = now.getHours();
+    const m = String(now.getMinutes()).padStart(2, "0");
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    clockEl.textContent = h + ":" + m + " " + ampm;
+  }
+
+  /* ======================================================================= */
+  /*  BOOT                                                                   */
+  /* ======================================================================= */
+  const speaker = document.querySelector(".tray__speaker");
+  function renderMute() { if (speaker) speaker.textContent = muted ? "\uD83D\uDD07" : "\uD83D\uDD08"; }
+  if (speaker) {
+    speaker.style.cursor = "pointer";
+    speaker.title = "Mute / unmute";
+    speaker.addEventListener("click", () => {
+      muted = !muted; storeSet("muted", muted ? "1" : "0"); renderMute(); if (!muted) sfxOpen();
+    });
+  }
+
+  applyTheme(storeGet("theme") || currentTheme);
+  renderMute();
+  buildIcons();
+  buildStartMenu();
+  initFace();
+  applyShellMode();
+  if (mobileMQ.addEventListener) mobileMQ.addEventListener("change", applyShellMode);
+  else if (mobileMQ.addListener) mobileMQ.addListener(applyShellMode); /* older Safari */
+  layoutTabs();
+  tickClock();
+  setInterval(tickClock, 1000);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRun(); });
+  runBoot();   /* first-load power-on splash */
+})();
+
+  </script>
+</body>
+</html>
